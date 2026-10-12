@@ -6,14 +6,10 @@ orders), admin CRUD with a members sub-grid, shop and admin API, voters, events,
 account owner bridge for tmonier/sylius-order-hold-plugin. Research and decisions: `SPEC.md`.
 Public docs: `README.md`.
 
-## Before publishing
+## Dependencies
 
-- **Remove the path repository** (`repositories.order-hold` in `composer.json`,
-  `../sylius-order-hold-plugin`) once tmonier/sylius-order-hold-plugin 1.0 is on Packagist: it
-  is a `require-dev` (bridge tests) and a `suggest`, never a `require`. The CI workflow already
-  drops it (`composer config --unset repositories.order-hold`) and needs the published package:
-  CI cannot pass before order-hold is on Packagist. Remove that workflow step with the
-  repository.
+- tmonier/sylius-order-hold-plugin is a `require-dev` (bridge tests) and a `suggest`, never a
+  `require`.
 
 ## Commands
 
@@ -38,9 +34,6 @@ fixture: company *Acme Industries* (`ACME_INDUSTRIES`, default group `wholesale`
 two orders each for the admin and the buyer. Dev server:
 `symfony server:start -d --port=8095 --no-tls` (admin `sylius` / `sylius`); shop
 `/en_US/account/company`.
-
-`composer update` mirrors the whole order-hold directory (vendor included) into
-`vendor/tmonier/sylius-order-hold-plugin`: delete its `vendor/` and `var/` afterwards (disk).
 
 ## Architecture
 

@@ -219,11 +219,6 @@ Services: `CurrentMemberResolverInterface`, `MemberChangeGuard` (rules) and `Mem
 
 ## Development
 
-Until tmonier/sylius-order-hold-plugin is on Packagist, `composer.json` resolves it from a
-sibling checkout (`../sylius-order-hold-plugin`, path repository `order-hold`; the CI workflow
-removes it with `composer config --unset repositories.order-hold` and installs the published
-package).
-
 ```bash
 cp compose.override.dist.yml compose.override.yml   # publishes MySQL on 3306 and MailHog (or run `make init`)
 docker compose up -d mysql mailhog   # empty root password
