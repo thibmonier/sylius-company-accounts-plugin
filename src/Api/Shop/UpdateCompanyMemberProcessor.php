@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberChangeGuard;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberUpdater;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
@@ -53,6 +54,12 @@ final class UpdateCompanyMemberProcessor implements ProcessorInterface
         $role = $data->role ?? $target->getRole();
         $enabled = $data->enabled ?? $target->isEnabled();
         $error = $this->memberUpdater->update($actor, $target, $role, $enabled);
+        if (MemberUpdater::ERROR_TARGET_NOT_FOUND === $error) {
+            throw new NotFoundHttpException('Member not found.');
+        }
+        if (MemberChangeGuard::ERROR_NOT_ALLOWED === $error) {
+            throw new AccessDeniedHttpException();
+        }
         if (null !== $error) {
             throw new UnprocessableEntityHttpException($this->translator->trans($error, [], 'validators', $this->locale()));
         }

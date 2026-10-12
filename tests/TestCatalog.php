@@ -152,6 +152,15 @@ final class TestCatalog
         return $member;
     }
 
+    /** A membership not persisted yet. */
+    public function memberDraft(CompanyInterface $company, CustomerInterface $customer, string $role = CompanyMemberInterface::ROLE_BUYER): CompanyMemberInterface
+    {
+        /** @var CompanyMemberFactoryInterface $factory */
+        $factory = $this->container->get('tmonier_company_accounts.factory.company_member');
+
+        return $factory->createForCustomer($company, $customer, $role);
+    }
+
     public function customerGroup(string $name = 'Wholesale'): CustomerGroupInterface
     {
         /** @var FactoryInterface<CustomerGroupInterface> $factory */

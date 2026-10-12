@@ -13,3 +13,4 @@ tmonier_company_accounts:
         not_allowed: 'Only an enabled admin of the company can change its members.'
         self_change: 'You cannot change your own role or status.'
         last_admin: 'The company must keep at least one enabled admin.'
+        not_found: 'This member is no longer in the company.'

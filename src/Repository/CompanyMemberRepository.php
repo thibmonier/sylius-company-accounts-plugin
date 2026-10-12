@@ -79,6 +79,22 @@ class CompanyMemberRepository extends EntityRepository implements CompanyMemberR
         ;
     }
 
+    public function findIdsInCompany(CompanyInterface $company, array $ids): array
+    {
+        /** @var list<int|string> $found */
+        $found = $this->createQueryBuilder('o')
+            ->select('o.id')
+            ->andWhere('o.company = :company')
+            ->andWhere('o.id IN (:ids)')
+            ->setParameter('company', $company)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult()
+        ;
+
+        return array_map(static fn (int|string $id): int => (int) $id, $found);
+    }
+
     public function findOneByIdAndCompanyId(int|string $id, int|string $companyId): ?CompanyMemberInterface
     {
         $member = $this->createQueryBuilder('o')

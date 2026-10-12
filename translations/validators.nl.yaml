@@ -13,3 +13,4 @@ tmonier_company_accounts:
         not_allowed: 'Alleen een actieve beheerder van het bedrijf kan de leden wijzigen.'
         self_change: 'U kunt uw eigen rol of status niet wijzigen.'
         last_admin: 'Het bedrijf moet minstens één actieve beheerder houden.'
+        not_found: 'Dit lid hoort niet meer bij het bedrijf.'

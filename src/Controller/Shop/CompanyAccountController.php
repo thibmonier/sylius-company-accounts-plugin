@@ -13,6 +13,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\CurrentMemberResolverInterface;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberChangeGuard;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberUpdater;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyOrderRepositoryInterface;
@@ -73,6 +74,12 @@ final class CompanyAccountController extends AbstractController
         $role = (string) $request->request->get('role', $target->getRole());
         $enabled = $request->request->getBoolean('enabled');
         $error = $this->memberUpdater->update($member, $target, $role, $enabled);
+        if (MemberUpdater::ERROR_TARGET_NOT_FOUND === $error) {
+            throw $this->createNotFoundException('Member not found.');
+        }
+        if (MemberChangeGuard::ERROR_NOT_ALLOWED === $error) {
+            throw $this->createAccessDeniedException();
+        }
         if (null !== $error) {
             $this->addFlash('error', $this->translator->trans($error, [], 'validators'));
 

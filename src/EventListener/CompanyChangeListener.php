@@ -21,8 +21,9 @@ use Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent;
 
 /**
  * Derives the company events from the unit of work (whatever made the change) and dispatches
- * them after the flush. Events of a flush that fails are dropped: they are queued in onFlush,
- * and the next flush (or a clear) starts from an empty queue, as postFlush never ran.
+ * them after the flush. Events of a flush that fails are dropped: they are collected per flush
+ * in onFlush and only queued for dispatch by the postFlush of that same flush, which never runs
+ * when the flush fails (also for a flush made, and failing, inside an event subscriber).
  *
  * Also applies the default customer group of a company to its members: given when a customer
  * with no group joins (CompanyMember::customerGroupAssigned), and only that group is taken back
@@ -34,7 +35,18 @@ final class CompanyChangeListener implements ResetInterface
     /** Changes of these fields alone do not make a `company.updated` event. */
     private const IGNORED_FIELDS = ['createdAt', 'updatedAt', 'customerGroupAssigned'];
 
-    /** @var list<CompanyEvent|CompanyMemberEvent> */
+    /**
+     * Events of the flush running now, queued by its postFlush.
+     *
+     * @var list<CompanyEvent|CompanyMemberEvent>
+     */
+    private array $flushing = [];
+
+    /**
+     * Events of completed flushes, waiting to be dispatched.
+     *
+     * @var list<CompanyEvent|CompanyMemberEvent>
+     */
     private array $pending = [];
 
     private bool $dispatching = false;
@@ -45,20 +57,17 @@ final class CompanyChangeListener implements ResetInterface
 
     public function onFlush(OnFlushEventArgs $args): void
     {
-        // Left by a flush that failed (no postFlush). A flush made by a listener while the events
-        // are dispatched adds its own after the remaining ones.
-        if (!$this->dispatching) {
-            $this->pending = [];
-        }
+        // Left by a flush that failed (no postFlush).
+        $this->flushing = [];
 
         $entityManager = $args->getObjectManager();
         $unitOfWork = $entityManager->getUnitOfWork();
 
         foreach ($unitOfWork->getScheduledEntityInsertions() as $entity) {
             if ($entity instanceof CompanyInterface) {
-                $this->pending[] = $this->companyEvent(CompanyEvents::COMPANY_CREATED, $entity);
+                $this->flushing[] = $this->companyEvent(CompanyEvents::COMPANY_CREATED, $entity);
             } elseif ($entity instanceof CompanyMemberInterface) {
-                $this->pending[] = $this->memberEvent(CompanyEvents::MEMBER_ADDED, $entity);
+                $this->flushing[] = $this->memberEvent(CompanyEvents::MEMBER_ADDED, $entity);
                 $group = $entity->getCompany()?->getDefaultCustomerGroup();
                 $customer = $entity->getCustomer();
                 if (null !== $group && null !== $customer && null === $customer->getGroup()) {
@@ -72,7 +81,7 @@ final class CompanyChangeListener implements ResetInterface
             if ($entity instanceof CompanyInterface) {
                 $changes = self::changes($unitOfWork, $entity);
                 if ([] !== $changes) {
-                    $this->pending[] = $this->companyEvent(CompanyEvents::COMPANY_UPDATED, $entity, $changes);
+                    $this->flushing[] = $this->companyEvent(CompanyEvents::COMPANY_UPDATED, $entity, $changes);
                 }
                 $groupChange = $unitOfWork->getEntityChangeSet($entity)['defaultCustomerGroup'] ?? null;
                 if (null !== $groupChange) {
@@ -81,19 +90,19 @@ final class CompanyChangeListener implements ResetInterface
             } elseif ($entity instanceof CompanyMemberInterface) {
                 $changes = self::changes($unitOfWork, $entity);
                 if (isset($changes['role'])) {
-                    $this->pending[] = $this->memberEvent(CompanyEvents::MEMBER_ROLE_CHANGED, $entity, ['role' => $changes['role']]);
+                    $this->flushing[] = $this->memberEvent(CompanyEvents::MEMBER_ROLE_CHANGED, $entity, ['role' => $changes['role']]);
                 }
                 if (isset($changes['enabled'])) {
-                    $this->pending[] = $this->memberEvent(CompanyEvents::MEMBER_ENABLED_CHANGED, $entity, ['enabled' => $changes['enabled']]);
+                    $this->flushing[] = $this->memberEvent(CompanyEvents::MEMBER_ENABLED_CHANGED, $entity, ['enabled' => $changes['enabled']]);
                 }
             }
         }
 
         foreach ($unitOfWork->getScheduledEntityDeletions() as $entity) {
             if ($entity instanceof CompanyInterface) {
-                $this->pending[] = $this->companyEvent(CompanyEvents::COMPANY_DELETED, $entity);
+                $this->flushing[] = $this->companyEvent(CompanyEvents::COMPANY_DELETED, $entity);
             } elseif ($entity instanceof CompanyMemberInterface) {
-                $this->pending[] = $this->memberEvent(CompanyEvents::MEMBER_REMOVED, $entity);
+                $this->flushing[] = $this->memberEvent(CompanyEvents::MEMBER_REMOVED, $entity);
                 $group = $entity->getCompany()?->getDefaultCustomerGroup();
                 $customer = $entity->getCustomer();
                 if ($entity->isCustomerGroupAssigned() && null !== $group && null !== $customer && $customer->getGroup() === $group) {
@@ -105,6 +114,10 @@ final class CompanyChangeListener implements ResetInterface
 
     public function postFlush(PostFlushEventArgs $args): void
     {
+        array_push($this->pending, ...$this->flushing);
+        $this->flushing = [];
+        // A flush made by a subscriber while the events are dispatched: its events are
+        // dispatched after the remaining ones by the loop below.
         if ($this->dispatching) {
             return;
         }
@@ -125,6 +138,7 @@ final class CompanyChangeListener implements ResetInterface
 
     public function onClear(OnClearEventArgs $args): void
     {
+        $this->flushing = [];
         if (!$this->dispatching) {
             $this->pending = [];
         }
@@ -132,6 +146,7 @@ final class CompanyChangeListener implements ResetInterface
 
     public function reset(): void
     {
+        $this->flushing = [];
         $this->pending = [];
         $this->dispatching = false;
     }

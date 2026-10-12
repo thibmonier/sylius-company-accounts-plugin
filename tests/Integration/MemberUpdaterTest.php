@@ -68,6 +68,34 @@ final class MemberUpdaterTest extends KernelTestCase
         self::assertSame(['approver', false], [$buyer->getRole(), $buyer->isEnabled()]);
     }
 
+    public function testATargetDeletedMeanwhileIsNotFound(): void
+    {
+        $company = $this->catalog()->company('Gone');
+        $admin = $this->catalog()->member($company, null, CompanyMemberInterface::ROLE_ADMIN);
+        $buyer = $this->catalog()->member($company);
+
+        // Detached by the store in another request.
+        $this->connection()->delete('tmonier_company_member', ['id' => $buyer->getId()]);
+
+        self::assertSame(MemberUpdater::ERROR_TARGET_NOT_FOUND, $this->updater()->update($admin, $buyer, 'approver', true));
+        self::assertTrue($this->entityManager()->isOpen());
+        self::assertSame(1, $this->adminCount((int) $company->getId()));
+    }
+
+    public function testAnActorDeletedMeanwhileIsRefused(): void
+    {
+        $company = $this->catalog()->company('Actor');
+        $admin = $this->catalog()->member($company, null, CompanyMemberInterface::ROLE_ADMIN);
+        $buyer = $this->catalog()->member($company);
+
+        $this->connection()->delete('tmonier_company_member', ['id' => $admin->getId()]);
+
+        self::assertSame(MemberChangeGuard::ERROR_NOT_ALLOWED, $this->updater()->update($admin, $buyer, 'admin', true));
+        self::assertTrue($this->entityManager()->isOpen());
+        $this->entityManager()->clear();
+        self::assertSame('buyer', $this->reload($buyer)->getRole());
+    }
+
     private function adminCount(int $companyId): int
     {
         $company = $this->service('tmonier_company_accounts.repository.company', CompanyRepositoryInterface::class)->find($companyId);

@@ -20,7 +20,7 @@
                 {% set name = member.customer.fullName|trim ?: '-' %}
                 {% set form_id = 'tmonier-member-form-' ~ member.id %}
                 <tr {{ sylius_test_html_attribute('tmonier-company-member', member.id) }}>
-                    <th scope="row" class="fw-normal" id="tmonier-member-name-{{ member.id }}">
+                    <th scope="row" class="fw-normal">
                         {{ name }}
                         {% if is_me %}<span class="badge text-bg-light">{{ 'tmonier_company_accounts.ui.you'|trans }}</span>{% endif %}
                     </th>

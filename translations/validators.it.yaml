@@ -13,3 +13,4 @@ tmonier_company_accounts:
         not_allowed: 'Solo un amministratore attivo dell''azienda può modificarne i membri.'
         self_change: 'Non può modificare il proprio ruolo o stato.'
         last_admin: 'L''azienda deve mantenere almeno un amministratore attivo.'
+        not_found: 'Questo membro non fa più parte dell''azienda.'

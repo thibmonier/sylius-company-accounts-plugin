@@ -13,6 +13,7 @@ use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyEvent;
 use Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyEvents;
 use Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent;
+use Tmonier\SyliusCompanyAccountsPlugin\Migrations\Version20261013100000;
 
 final class CompanyEventsTest extends KernelTestCase
 {
@@ -124,6 +125,38 @@ final class CompanyEventsTest extends KernelTestCase
         self::assertSame($next->getId(), $created->getCompanyId());
     }
 
+    public function testEventsOfAFailedFlushMadeByASubscriberAreNeverDispatched(): void
+    {
+        $existing = $this->catalog()->company('Taken');
+        $this->listen();
+        $dispatcher = $this->service('event_dispatcher', EventDispatcherInterface::class);
+        $failed = false;
+        // A subscriber flushes while the events are dispatched, the flush fails and is caught.
+        $dispatcher->addListener(CompanyEvents::COMPANY_CREATED, function () use ($existing, &$failed): void {
+            if ($failed) {
+                return;
+            }
+            $failed = true;
+            $duplicate = $this->catalog()->companyDraft('Duplicate');
+            $duplicate->setCode((string) $existing->getCode());
+            $this->entityManager()->persist($duplicate);
+
+            try {
+                $this->entityManager()->flush();
+            } catch (UniqueConstraintViolationException) {
+            }
+        });
+
+        $customer = $this->catalog()->customer('subscribed');
+        $company = $this->catalog()->companyDraft('Subscribed');
+        $this->entityManager()->persist($company);
+        $this->entityManager()->persist($this->catalog()->memberDraft($company, $customer));
+        $this->entityManager()->flush();
+
+        self::assertTrue($failed);
+        self::assertSame([CompanyEvents::COMPANY_CREATED, CompanyEvents::MEMBER_ADDED], array_map(static fn ($event): string => $event->getName(), $this->events));
+    }
+
     public function testTheCompanyOnlyTakesBackTheGroupItGave(): void
     {
         $wholesale = $this->catalog()->customerGroup('Wholesale');
@@ -170,6 +203,28 @@ final class CompanyEventsTest extends KernelTestCase
         self::assertSame($wholesale->getId(), $this->reload($before)->getGroup()?->getId(), 'A group the customer had before joining is kept.');
         self::assertSame($vip->getId(), $this->reload($own)->getGroup()?->getId());
         self::assertSame($partners->getId(), $this->reload($movedCustomer)->getGroup()?->getId(), 'A group changed by the merchant is kept.');
+    }
+
+    public function testTheMigrationMarksTheGroupsGivenBeforeTheFlagExisted(): void
+    {
+        $wholesale = $this->catalog()->customerGroup('Wholesale');
+        $vip = $this->catalog()->customerGroup('Vip');
+        $company = $this->catalog()->company('Upgraded', true, $wholesale);
+        $given = $this->catalog()->member($company);
+        $own = $this->catalog()->customer('own');
+        $own->setGroup($vip);
+        $this->entityManager()->flush();
+        $withOwnGroup = $this->catalog()->member($company, $own);
+        $none = $this->catalog()->member($this->catalog()->company('No group'));
+        // Rows of an install made before the flag.
+        $this->connection()->executeStatement('UPDATE tmonier_company_member SET customer_group_assigned = FALSE WHERE id IN (?, ?, ?)', [$given->getId(), $withOwnGroup->getId(), $none->getId()]);
+
+        $this->connection()->executeStatement(Version20261013100000::BACKFILL_SQL);
+
+        $flag = fn (CompanyMemberInterface $member): bool => (bool) $this->connection()->fetchOne('SELECT customer_group_assigned FROM tmonier_company_member WHERE id = ?', [$member->getId()]);
+        self::assertTrue($flag($given), 'Default group of the company: given by it.');
+        self::assertFalse($flag($withOwnGroup), 'Own group.');
+        self::assertFalse($flag($none), 'Company without default group.');
     }
 
     public function testDeletingTheShopAccountRemovesTheMembership(): void

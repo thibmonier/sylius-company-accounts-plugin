@@ -85,7 +85,9 @@ first admin is attached.
 Concurrency: `MemberUpdater` runs the guard and the write in one transaction that first locks
 the company row (`PESSIMISTIC_WRITE`), re-reads the actor and the target and counts the enabled
 admins in the database. Two admins demoting each other at the same time are serialised: the
-second request waits, then sees that its actor is no longer an admin and is refused. Shop page
+second request waits, then sees that its actor is no longer an admin and is refused. A target
+deleted or moved meanwhile answers 404, an actor deleted meanwhile 403 (checked in the database
+under the lock, the entity manager stays open). Shop page
 and shop API share it (`tests/TestApplication/config/dbal_savepoints.php` for DBAL 3).
 
 ### 3.4 Company orders
@@ -129,7 +131,8 @@ checkouts in progress (always the customer).
 
 Applied in `CompanyChangeListener` (onFlush, `recomputeSingleEntityChangeSet` on the customer):
 given on joining if the customer has no group, and then remembered on the membership
-(`CompanyMember::customerGroupAssigned`). Only a group the company gave is taken back on
+(`CompanyMember::customerGroupAssigned`; the migration that adds it marks existing members
+whose group is the default group of their company). Only a group the company gave is taken back on
 leaving (if still unchanged) or moved when the company default changes; members with no group
 receive the new default. A group the merchant set, before joining or after, is never touched.
 It is the only core field the plugin writes.
@@ -139,8 +142,9 @@ It is the only core field the plugin writes.
 `CompanyChangeListener` derives `company.created/updated/deleted` and
 `member.added/role_changed/enabled_changed/removed` from the unit of work (any source),
 captures ids and codes before the flush and dispatches after it. No personal data in the event
-objects. A flush that fails never reaches postFlush: its queued events are dropped at the next
-flush and on `clear()`, so they are never dispatched by a later successful flush. Limitation:
+objects. Events are collected per flush and queued by the postFlush of that flush: a flush
+that fails (including one made, and caught, by an event subscriber during the dispatch) never
+reaches postFlush, so its events are never dispatched. Limitation:
 events are dispatched after the flush, not after an outer transaction opened by the caller
 (`wrapInTransaction`, Messenger `doctrine_transaction` middleware); if that outer transaction
 rolls back, the events have already been dispatched. A transactional outbox needs a `ChangeDetectorInterface` of the outbox plugin instead
