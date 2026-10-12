@@ -81,6 +81,12 @@ final class AdminCompanyTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString((string) $company->getName(), $crawler->filter('[data-test-tmonier-company-member-title]')->text());
         self::assertStringContainsString((string) $company->getName(), $crawler->filter('.breadcrumb')->text());
+        // Required marker on the role field only, not on each role; the radios stay required.
+        $radios = $crawler->filter('input[name="tmonier_company_accounts_company_member[role]"]');
+        self::assertCount(3, $radios);
+        self::assertCount(3, $radios->filter('[required]'));
+        self::assertCount(0, $crawler->filter('label.required[for^="tmonier_company_accounts_company_member_role_"]'));
+        self::assertCount(1, $crawler->filter('.required')->reduce(static fn ($node): bool => str_contains($node->text(), 'Role')));
         $form = $crawler->filter('form[name="tmonier_company_accounts_company_member"]')->form();
         $this->choice($form, 'tmonier_company_accounts_company_member[customer]')->disableValidation()->setValue((string) $this->idOf($customer));
         $this->choice($form, 'tmonier_company_accounts_company_member[role]')->setValue('admin');

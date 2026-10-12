@@ -10,6 +10,8 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 
 /** Admin form of a member: the customer is chosen when attaching, then fixed. */
@@ -41,6 +43,19 @@ final class CompanyMemberType extends AbstractResourceType
                 }
             })
         ;
+    }
+
+    /**
+     * The required marker belongs to the role field, not to each of its radios (the themes
+     * mark every required option label otherwise). The radios stay required in HTML.
+     */
+    public function finishView(FormView $view, FormInterface $form, array $options): void
+    {
+        foreach ($view['role']->children as $choice) {
+            $attr = $choice->vars['attr'] ?? [];
+            $choice->vars['required'] = false;
+            $choice->vars['attr'] = (is_array($attr) ? $attr : []) + ['required' => 'required'];
+        }
     }
 
     public function getBlockPrefix(): string
