@@ -31,7 +31,9 @@ final class CompanyOrderProvider implements ProviderInterface
         [, $company] = $this->access->membership(CompanyPermissions::ORDER_VIEW_COMPANY);
 
         if ($operation instanceof CollectionOperationInterface) {
-            [$page, $offset, $limit] = $this->pagination->getPagination($operation, $context);
+            $page = $this->pagination->getPage($context);
+            $limit = $this->pagination->getLimit($operation, $context);
+            $offset = $this->pagination->getOffset($operation, $context);
             $paginator = new Paginator($this->companyOrderRepository->createOrdersQueryBuilder($company)->setFirstResult($offset)->setMaxResults($limit));
             $views = [];
             foreach ($paginator as $order) {

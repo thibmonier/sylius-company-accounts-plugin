@@ -1,6 +1,7 @@
 imports:
     - { resource: "@TmonierSyliusCompanyAccountsPlugin/config/config.yaml" }
     - { resource: "dbal_savepoints.php" }
+    - { resource: "services.php" }
 
 # Demo company (dev and test databases): admin, buyer and approver of Acme Industries
 # (admin@acme-industries.example.com / sylius...), orders of the admin and the buyer.

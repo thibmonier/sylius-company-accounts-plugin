@@ -39,8 +39,11 @@ final class CompanyOrderListener
             }
         }
         foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
-            $change = $entity instanceof OrderInterface ? ($unitOfWork->getEntityChangeSet($entity)['checkoutState'] ?? null) : null;
-            if (null !== $change && OrderCheckoutStates::STATE_COMPLETED === $change[1] && $entity instanceof OrderInterface && null === $this->companyOrderRepository->findOneByOrder($entity)) {
+            if (!$entity instanceof OrderInterface) {
+                continue;
+            }
+            $change = $unitOfWork->getEntityChangeSet($entity)['checkoutState'] ?? null;
+            if (null !== $change && OrderCheckoutStates::STATE_COMPLETED === $change[1] && null === $this->companyOrderRepository->findOneByOrder($entity)) {
                 $orders[] = $entity;
             }
         }

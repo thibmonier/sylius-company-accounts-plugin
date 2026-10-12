@@ -248,7 +248,7 @@ final class TestCatalog
     private function shippingMethod(): ShippingMethodInterface
     {
         if (null !== $this->shippingMethod) {
-            return $this->shippingMethod;
+            return $this->shippingMethod = $this->managed($this->shippingMethod);
         }
 
         $channel = $this->channel();
@@ -298,7 +298,7 @@ final class TestCatalog
     private function paymentMethod(): PaymentMethodInterface
     {
         if (null !== $this->paymentMethod) {
-            return $this->paymentMethod;
+            return $this->paymentMethod = $this->managed($this->paymentMethod);
         }
 
         /** @var PaymentMethodFactoryInterface<PaymentMethodInterface> $factory */
@@ -323,7 +323,7 @@ final class TestCatalog
     private function variant(): ProductVariantInterface
     {
         if (null !== $this->variant) {
-            return $this->variant;
+            return $this->variant = $this->managed($this->variant);
         }
 
         $channel = $this->channel();
@@ -361,6 +361,26 @@ final class TestCatalog
         $this->entityManager()->flush();
 
         return $this->variant = $variant;
+    }
+
+    /**
+     * Entities cached by the catalog, reloaded after an entity manager clear().
+     *
+     * @template T of object
+     *
+     * @param T $entity
+     *
+     * @return T
+     */
+    private function managed(object $entity): object
+    {
+        if ($this->entityManager()->contains($entity) || !method_exists($entity, 'getId')) {
+            return $entity;
+        }
+        $reloaded = $this->entityManager()->find($entity::class, $entity->getId());
+        Assert::isInstanceOf($reloaded, $entity::class);
+
+        return $reloaded;
     }
 
     private function entityManager(): EntityManagerInterface

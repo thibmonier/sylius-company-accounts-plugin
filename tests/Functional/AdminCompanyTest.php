@@ -80,8 +80,8 @@ final class AdminCompanyTest extends WebTestCase
         $crawler = $this->client->request('GET', $base . '/new');
         self::assertResponseIsSuccessful();
         $form = $crawler->filter('form[name="tmonier_company_accounts_company_member"]')->form();
-        $form['tmonier_company_accounts_company_member[customer]']->disableValidation()->setValue((string) $customer->getId());
-        $form['tmonier_company_accounts_company_member[role]']->setValue('admin');
+        $this->choice($form, 'tmonier_company_accounts_company_member[customer]')->disableValidation()->setValue((string) $this->idOf($customer));
+        $this->choice($form, 'tmonier_company_accounts_company_member[role]')->setValue('admin');
         $this->client->submit($form);
         self::assertResponseRedirects($base);
 
@@ -93,7 +93,7 @@ final class AdminCompanyTest extends WebTestCase
         // A customer of another company cannot be attached.
         $crawler = $this->client->request('GET', $base . '/new');
         $form = $crawler->filter('form[name="tmonier_company_accounts_company_member"]')->form();
-        $form['tmonier_company_accounts_company_member[customer]']->disableValidation()->setValue((string) CompanyScenario::customerOf($existing)->getId());
+        $this->choice($form, 'tmonier_company_accounts_company_member[customer]')->disableValidation()->setValue((string) $this->idOf(CompanyScenario::customerOf($existing)));
         $this->client->submit($form);
         self::assertResponseStatusCodeSame(422);
         self::assertStringContainsString('This customer already belongs to a company.', (string) $this->client->getResponse()->getContent());
@@ -105,8 +105,8 @@ final class AdminCompanyTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('[name="tmonier_company_accounts_company_member[customer]"]'), 'The customer is fixed.');
         $form = $crawler->filter('form[name="tmonier_company_accounts_company_member"]')->form();
-        $form['tmonier_company_accounts_company_member[role]']->setValue('buyer');
-        $form['tmonier_company_accounts_company_member[enabled]']->untick();
+        $this->choice($form, 'tmonier_company_accounts_company_member[role]')->setValue('buyer');
+        $this->choice($form, 'tmonier_company_accounts_company_member[enabled]')->untick();
         $this->client->submit($form);
         self::assertResponseRedirects($base);
         $member = $this->reload($member);
@@ -131,13 +131,13 @@ final class AdminCompanyTest extends WebTestCase
         $loner = $this->catalog()->customer('loner');
         $this->loginAdmin();
 
-        $crawler = $this->client->request('GET', sprintf('/admin/customers/%d', (int) CompanyScenario::customerOf($member)->getId()));
+        $crawler = $this->client->request('GET', sprintf('/admin/customers/%d', $this->idOf(CompanyScenario::customerOf($member))));
         self::assertResponseIsSuccessful();
         $cell = $crawler->filter('[data-test-tmonier-customer-company]');
         self::assertStringContainsString((string) $company->getName(), $cell->text());
         self::assertStringContainsString('Approver', $cell->text());
 
-        $crawler = $this->client->request('GET', sprintf('/admin/customers/%d', (int) $loner->getId()));
+        $crawler = $this->client->request('GET', sprintf('/admin/customers/%d', $this->idOf($loner)));
         self::assertSame('-', trim($crawler->filter('[data-test-tmonier-customer-company]')->text()));
     }
 

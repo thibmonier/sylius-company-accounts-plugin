@@ -58,10 +58,8 @@ final class CompanyOrderView
     {
         $customer = $order->getCustomer();
         $items = [];
+        /** @var OrderItemInterface $item */
         foreach ($order->getItems() as $item) {
-            if (!$item instanceof OrderItemInterface) {
-                continue;
-            }
             $items[] = [
                 'productName' => $item->getProductName(),
                 'variantName' => $item->getVariantName(),

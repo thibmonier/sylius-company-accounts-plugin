@@ -78,9 +78,9 @@ final class CompanyFixture extends AbstractFixture
         if (!$channel instanceof ChannelInterface || 0 === $options['orders_per_member']) {
             return;
         }
-        foreach ([CompanyMemberInterface::ROLE_ADMIN, CompanyMemberInterface::ROLE_BUYER] as $role) {
+        foreach (array_intersect_key($customers, [CompanyMemberInterface::ROLE_ADMIN => true, CompanyMemberInterface::ROLE_BUYER => true]) as $customer) {
             for ($i = 0; $i < $options['orders_per_member']; ++$i) {
-                $order = $this->orderExampleFactory->create(['channel' => $channel, 'customer' => $customers[$role]]);
+                $order = $this->orderExampleFactory->create(['channel' => $channel, 'customer' => $customer]);
                 $this->entityManager->persist($order);
                 $this->entityManager->flush();
             }

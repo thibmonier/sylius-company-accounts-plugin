@@ -39,8 +39,8 @@ final class UpdateCompanyMemberProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Only company admins manage members.');
         }
 
-        $role = $data instanceof UpdateCompanyMemberInput && null !== $data->role ? $data->role : $target->getRole();
-        $enabled = $data instanceof UpdateCompanyMemberInput && null !== $data->enabled ? $data->enabled : $target->isEnabled();
+        $role = $data->role ?? $target->getRole();
+        $enabled = $data->enabled ?? $target->isEnabled();
         $error = $this->memberChangeGuard->check($actor, $target, $role, $enabled);
         if (null !== $error) {
             throw new UnprocessableEntityHttpException($this->translator->trans($error, [], 'validators', 'en'));

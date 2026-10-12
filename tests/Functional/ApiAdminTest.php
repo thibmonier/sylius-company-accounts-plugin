@@ -36,7 +36,7 @@ final class ApiAdminTest extends WebTestCase
         $customer = $this->catalog()->customer('api-member');
         $this->client->request('POST', '/api/v2/admin/company-members', server: $headers, content: (string) json_encode([
             'company' => '/api/v2/admin/companies/' . $code,
-            'customer' => '/api/v2/admin/customers/' . $customer->getId(),
+            'customer' => '/api/v2/admin/customers/' . $this->idOf($customer),
             'role' => 'admin',
             'enabled' => true,
         ]));
@@ -50,7 +50,7 @@ final class ApiAdminTest extends WebTestCase
         // One company per customer.
         $this->client->request('POST', '/api/v2/admin/company-members', server: $headers, content: (string) json_encode([
             'company' => '/api/v2/admin/companies/' . $code,
-            'customer' => '/api/v2/admin/customers/' . $customer->getId(),
+            'customer' => '/api/v2/admin/customers/' . $this->idOf($customer),
             'role' => 'buyer',
         ]));
         self::assertResponseStatusCodeSame(422);

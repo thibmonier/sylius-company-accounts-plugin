@@ -10,9 +10,6 @@ use Sylius\Component\Core\Model\OrderInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyOrderInterface;
 
-/**
- * @extends EntityRepository<CompanyOrderInterface>
- */
 class CompanyOrderRepository extends EntityRepository implements CompanyOrderRepositoryInterface
 {
     public function findOneByOrder(OrderInterface $order): ?CompanyOrderInterface

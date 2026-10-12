@@ -10,6 +10,8 @@ use Sylius\Component\Core\Model\CustomerInterface;
 use Sylius\Component\Core\Model\ShopUserInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\DomCrawler\Field\ChoiceFormField;
+use Symfony\Component\DomCrawler\Form;
 use Tests\Tmonier\SyliusCompanyAccountsPlugin\CompanyAccountsTestTrait;
 
 trait FunctionalTestTrait
@@ -101,6 +103,14 @@ trait FunctionalTestTrait
         $flashes = $crawler->filter('[data-test-flash-messages]')->each(static fn (Crawler $node): string => trim($node->text()));
 
         return $flashes;
+    }
+
+    private function choice(Form $form, string $name): ChoiceFormField
+    {
+        $field = $form[$name];
+        self::assertInstanceOf(ChoiceFormField::class, $field);
+
+        return $field;
     }
 
     private function jwtManager(): JWTTokenManagerInterface

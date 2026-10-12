@@ -90,7 +90,6 @@ final class ApiShopTest extends WebTestCase
         self::assertCount(4, $members);
         $bob = array_values(array_filter($members, static fn ($member): bool => is_array($member) && 'Bob' === $member['firstName']));
         self::assertCount(1, $bob);
-        self::assertIsArray($bob[0]);
         self::assertSame(['Buyer', 'buyer', true, true], [$bob[0]['lastName'], $bob[0]['role'], $bob[0]['enabled'], $bob[0]['me']]);
         foreach ($members as $member) {
             self::assertIsArray($member);
@@ -155,7 +154,8 @@ final class ApiShopTest extends WebTestCase
         self::assertSame($s->orderA->getNumber(), $order['number']);
         self::assertSame('Bob Buyer', $order['placedBy']);
         self::assertIsArray($order['items']);
-        self::assertSame(2, $order['items'][0]['quantity'] ?? null);
+        self::assertIsArray($order['items'][0]);
+        self::assertSame(2, $order['items'][0]['quantity']);
         self::assertSame($s->orderA->getTotal(), $order['total']);
         $content = (string) $this->client->getResponse()->getContent();
         self::assertStringNotContainsString('@company-accounts.test', $content);
@@ -174,5 +174,4 @@ final class ApiShopTest extends WebTestCase
             self::assertArrayHasKey($path, $paths);
         }
     }
-
 }

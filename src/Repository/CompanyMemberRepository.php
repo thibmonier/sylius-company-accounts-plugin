@@ -10,9 +10,6 @@ use Sylius\Component\Customer\Model\CustomerInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 
-/**
- * @extends EntityRepository<CompanyMemberInterface>
- */
 class CompanyMemberRepository extends EntityRepository implements CompanyMemberRepositoryInterface
 {
     public function findOneByCustomer(CustomerInterface $customer): ?CompanyMemberInterface

@@ -8,9 +8,6 @@ use Doctrine\ORM\QueryBuilder;
 use Sylius\Bundle\ResourceBundle\Doctrine\ORM\EntityRepository;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 
-/**
- * @extends EntityRepository<CompanyInterface>
- */
 class CompanyRepository extends EntityRepository implements CompanyRepositoryInterface
 {
     public function createListQueryBuilder(): QueryBuilder
