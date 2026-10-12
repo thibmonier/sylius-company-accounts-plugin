@@ -46,8 +46,11 @@ trait CompanyAccountsTestTrait
     {
         $this->entityManager()->clear();
         $id = $entity instanceof ResourceInterface ? $entity->getId() : null;
-        $reloaded = $this->entityManager()->find($entity::class, $id);
-        self::assertInstanceOf($entity::class, $reloaded);
+        // The mapped class, not a Doctrine proxy class (lazy ghosts are not used before PHP 8.4).
+        $class = $this->entityManager()->getClassMetadata($entity::class)->getName();
+        $reloaded = $this->entityManager()->find($class, $id);
+        self::assertInstanceOf($class, $reloaded);
+        /** @var T $reloaded */
 
         return $reloaded;
     }

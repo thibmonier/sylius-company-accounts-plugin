@@ -118,7 +118,10 @@ trait FunctionalTestTrait
         $this->client->request('GET', $this->shopUrl('/'));
         $request = $this->client->getRequest();
         $session = $request->getSession();
-        $manager = new CsrfTokenManager(null, new SessionTokenStorage(new RequestStack([$request])));
+        // No RequestStack constructor argument before Symfony 7.2.
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+        $manager = new CsrfTokenManager(null, new SessionTokenStorage($requestStack));
         $value = $manager->getToken($id)->getValue();
         $session->save();
         $this->client->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));

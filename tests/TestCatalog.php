@@ -430,8 +430,11 @@ final class TestCatalog
         if ($this->entityManager()->contains($entity) || !method_exists($entity, 'getId')) {
             return $entity;
         }
-        $reloaded = $this->entityManager()->find($entity::class, $entity->getId());
-        Assert::isInstanceOf($reloaded, $entity::class);
+        // The mapped class, not a Doctrine proxy class (lazy ghosts are not used before PHP 8.4).
+        $class = $this->entityManager()->getClassMetadata($entity::class)->getName();
+        $reloaded = $this->entityManager()->find($class, $entity->getId());
+        Assert::isInstanceOf($reloaded, $class);
+        /** @var T $reloaded */
 
         return $reloaded;
     }
