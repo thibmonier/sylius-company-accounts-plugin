@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tmonier\SyliusCompanyAccountsPlugin\EventListener;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\UnitOfWork;
@@ -20,17 +21,23 @@ use Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent;
 
 /**
  * Derives the company events from the unit of work (whatever made the change) and dispatches
- * them after the flush. Also applies the default customer group of a company to its members:
- * given when a customer joins (if they have no group), taken back when they leave (if it is
- * still the company group), and moved when the default group of the company changes.
+ * them after the flush. Events of a flush that fails are dropped: they are queued in onFlush,
+ * and the next flush (or a clear) starts from an empty queue, as postFlush never ran.
+ *
+ * Also applies the default customer group of a company to its members: given when a customer
+ * with no group joins (CompanyMember::customerGroupAssigned), and only that group is taken back
+ * when they leave or moved when the company default changes. A group set by the merchant, before
+ * or after joining, is never touched.
  */
 final class CompanyChangeListener implements ResetInterface
 {
     /** Changes of these fields alone do not make a `company.updated` event. */
-    private const IGNORED_FIELDS = ['createdAt', 'updatedAt'];
+    private const IGNORED_FIELDS = ['createdAt', 'updatedAt', 'customerGroupAssigned'];
 
     /** @var list<CompanyEvent|CompanyMemberEvent> */
     private array $pending = [];
+
+    private bool $dispatching = false;
 
     public function __construct(private readonly EventDispatcherInterface $eventDispatcher)
     {
@@ -38,6 +45,12 @@ final class CompanyChangeListener implements ResetInterface
 
     public function onFlush(OnFlushEventArgs $args): void
     {
+        // Left by a flush that failed (no postFlush). A flush made by a listener while the events
+        // are dispatched adds its own after the remaining ones.
+        if (!$this->dispatching) {
+            $this->pending = [];
+        }
+
         $entityManager = $args->getObjectManager();
         $unitOfWork = $entityManager->getUnitOfWork();
 
@@ -50,6 +63,7 @@ final class CompanyChangeListener implements ResetInterface
                 $customer = $entity->getCustomer();
                 if (null !== $group && null !== $customer && null === $customer->getGroup()) {
                     $this->changeGroup($entityManager, $customer, $group);
+                    $this->markGroupAssigned($entityManager, $entity, true);
                 }
             }
         }
@@ -82,7 +96,7 @@ final class CompanyChangeListener implements ResetInterface
                 $this->pending[] = $this->memberEvent(CompanyEvents::MEMBER_REMOVED, $entity);
                 $group = $entity->getCompany()?->getDefaultCustomerGroup();
                 $customer = $entity->getCustomer();
-                if (null !== $group && null !== $customer && $customer->getGroup() === $group) {
+                if ($entity->isCustomerGroupAssigned() && null !== $group && null !== $customer && $customer->getGroup() === $group) {
                     $this->changeGroup($entityManager, $customer, null);
                 }
             }
@@ -91,16 +105,35 @@ final class CompanyChangeListener implements ResetInterface
 
     public function postFlush(PostFlushEventArgs $args): void
     {
+        if ($this->dispatching) {
+            return;
+        }
+
         // A listener may flush again: events of that flush are queued after these ones.
-        while ([] !== $this->pending) {
-            $event = array_shift($this->pending);
-            $this->eventDispatcher->dispatch($event, $event->getName());
+        $this->dispatching = true;
+
+        try {
+            while ([] !== $this->pending) {
+                $event = array_shift($this->pending);
+                $this->eventDispatcher->dispatch($event, $event->getName());
+            }
+        } finally {
+            $this->dispatching = false;
+            $this->pending = [];
+        }
+    }
+
+    public function onClear(OnClearEventArgs $args): void
+    {
+        if (!$this->dispatching) {
+            $this->pending = [];
         }
     }
 
     public function reset(): void
     {
         $this->pending = [];
+        $this->dispatching = false;
     }
 
     private function moveDefaultGroup(EntityManagerInterface $entityManager, CompanyInterface $company, ?CustomerGroupInterface $previous, ?CustomerGroupInterface $next): void
@@ -112,8 +145,12 @@ final class CompanyChangeListener implements ResetInterface
                 continue;
             }
             $current = $customer->getGroup();
-            if (null === $current || (null !== $previous && $current === $previous)) {
+            if ($member->isCustomerGroupAssigned() && null !== $previous && $current === $previous) {
                 $this->changeGroup($entityManager, $customer, $next);
+                $this->markGroupAssigned($entityManager, $member, null !== $next);
+            } elseif (null === $current && null !== $next) {
+                $this->changeGroup($entityManager, $customer, $next);
+                $this->markGroupAssigned($entityManager, $member, true);
             }
         }
     }
@@ -128,6 +165,18 @@ final class CompanyChangeListener implements ResetInterface
         $customer->setGroup($group);
         if ($unitOfWork->isScheduledForInsert($customer) || UnitOfWork::STATE_MANAGED === $unitOfWork->getEntityState($customer)) {
             $unitOfWork->recomputeSingleEntityChangeSet($entityManager->getClassMetadata($customer::class), $customer);
+        }
+    }
+
+    private function markGroupAssigned(EntityManagerInterface $entityManager, CompanyMemberInterface $member, bool $assigned): void
+    {
+        if ($member->isCustomerGroupAssigned() === $assigned) {
+            return;
+        }
+        $member->setCustomerGroupAssigned($assigned);
+        $unitOfWork = $entityManager->getUnitOfWork();
+        if ($unitOfWork->isScheduledForInsert($member) || UnitOfWork::STATE_MANAGED === $unitOfWork->getEntityState($member)) {
+            $unitOfWork->recomputeSingleEntityChangeSet($entityManager->getClassMetadata($member::class), $member);
         }
     }
 

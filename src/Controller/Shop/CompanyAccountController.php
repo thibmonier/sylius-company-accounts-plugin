@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tmonier\SyliusCompanyAccountsPlugin\Controller\Shop;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Sylius\Component\Core\Model\OrderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,7 +13,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\CurrentMemberResolverInterface;
-use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberChangeGuard;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberUpdater;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyOrderRepositoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
@@ -32,8 +31,7 @@ final class CompanyAccountController extends AbstractController
         private readonly CurrentMemberResolverInterface $currentMemberResolver,
         private readonly CompanyMemberRepositoryInterface $memberRepository,
         private readonly CompanyOrderRepositoryInterface $companyOrderRepository,
-        private readonly MemberChangeGuard $memberChangeGuard,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly MemberUpdater $memberUpdater,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -74,16 +72,13 @@ final class CompanyAccountController extends AbstractController
 
         $role = (string) $request->request->get('role', $target->getRole());
         $enabled = $request->request->getBoolean('enabled');
-        $error = $this->memberChangeGuard->check($member, $target, $role, $enabled);
+        $error = $this->memberUpdater->update($member, $target, $role, $enabled);
         if (null !== $error) {
             $this->addFlash('error', $this->translator->trans($error, [], 'validators'));
 
             return $this->redirectToRoute('tmonier_company_accounts_shop_company_members');
         }
 
-        $target->setRole($role);
-        $target->setEnabled($enabled);
-        $this->entityManager->flush();
         $this->addFlash('success', 'tmonier_company_accounts.member_updated');
 
         return $this->redirectToRoute('tmonier_company_accounts_shop_company_members');
@@ -100,13 +95,18 @@ final class CompanyAccountController extends AbstractController
                 ->setMaxResults(self::ORDERS_PER_PAGE),
         );
         $total = count($paginator);
+        $pages = max(1, (int) ceil($total / self::ORDERS_PER_PAGE));
+        // Old bookmark or fewer orders since: the last page, not an empty list.
+        if ($page > $pages) {
+            return $this->redirectToRoute('tmonier_company_accounts_shop_company_orders', ['page' => $pages]);
+        }
 
         return $this->render('@TmonierSyliusCompanyAccountsPlugin/shop/account/company/orders.html.twig', [
             'company' => $company,
             'member' => $member,
             'orders' => iterator_to_array($paginator),
             'page' => $page,
-            'pages' => max(1, (int) ceil($total / self::ORDERS_PER_PAGE)),
+            'pages' => $pages,
             'total' => $total,
         ]);
     }

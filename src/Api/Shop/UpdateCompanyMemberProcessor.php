@@ -6,12 +6,13 @@ namespace Tmonier\SyliusCompanyAccountsPlugin\Api\Shop;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use Sylius\Component\Locale\Context\LocaleContextInterface;
+use Sylius\Component\Locale\Context\LocaleNotFoundException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberChangeGuard;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberUpdater;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
 
@@ -21,10 +22,20 @@ final class UpdateCompanyMemberProcessor implements ProcessorInterface
     public function __construct(
         private readonly ShopApiAccess $access,
         private readonly CompanyMemberRepositoryInterface $memberRepository,
-        private readonly MemberChangeGuard $memberChangeGuard,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly MemberUpdater $memberUpdater,
         private readonly TranslatorInterface $translator,
+        private readonly LocaleContextInterface $localeContext,
     ) {
+    }
+
+    /** The locale of the request (Accept-Language, channel): the API answers in it. */
+    private function locale(): ?string
+    {
+        try {
+            return $this->localeContext->getLocaleCode();
+        } catch (LocaleNotFoundException) {
+            return null;
+        }
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): CompanyMemberView
@@ -41,14 +52,10 @@ final class UpdateCompanyMemberProcessor implements ProcessorInterface
 
         $role = $data->role ?? $target->getRole();
         $enabled = $data->enabled ?? $target->isEnabled();
-        $error = $this->memberChangeGuard->check($actor, $target, $role, $enabled);
+        $error = $this->memberUpdater->update($actor, $target, $role, $enabled);
         if (null !== $error) {
-            throw new UnprocessableEntityHttpException($this->translator->trans($error, [], 'validators', 'en'));
+            throw new UnprocessableEntityHttpException($this->translator->trans($error, [], 'validators', $this->locale()));
         }
-
-        $target->setRole($role);
-        $target->setEnabled($enabled);
-        $this->entityManager->flush();
 
         return CompanyMemberView::fromMember($target, $actor);
     }

@@ -65,6 +65,20 @@ class CompanyMemberRepository extends EntityRepository implements CompanyMemberR
         return $member instanceof CompanyMemberInterface ? $member : null;
     }
 
+    public function countEnabledAdmins(CompanyInterface $company): int
+    {
+        return (int) $this->createQueryBuilder('o')
+            ->select('COUNT(o.id)')
+            ->andWhere('o.company = :company')
+            ->andWhere('o.enabled = true')
+            ->andWhere('o.role = :role')
+            ->setParameter('company', $company)
+            ->setParameter('role', CompanyMemberInterface::ROLE_ADMIN)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
     public function findOneByIdAndCompanyId(int|string $id, int|string $companyId): ?CompanyMemberInterface
     {
         $member = $this->createQueryBuilder('o')

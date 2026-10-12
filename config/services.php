@@ -19,9 +19,13 @@ use Tmonier\SyliusCompanyAccountsPlugin\Fixture\CompanyFixture;
 use Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyMemberType;
 use Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyType;
 use Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CustomerAutocompleteType;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\AccountHolderEligibilityChecker;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\CompanyOrderEligibilityCheckerInterface;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\CompositeCompanyOrderEligibilityChecker;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\CurrentMemberResolver;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\CurrentMemberResolverInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberChangeGuard;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\MemberUpdater;
 use Tmonier\SyliusCompanyAccountsPlugin\Menu\AccountMenuListener;
 use Tmonier\SyliusCompanyAccountsPlugin\Menu\AdminMenuListener;
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyVoter;
@@ -40,8 +44,29 @@ return static function (ContainerConfigurator $container): void {
     ;
     $services->alias(CurrentMemberResolverInterface::class, 'tmonier_company_accounts.current_member_resolver');
 
+    // Who an order is placed for: tagged checkers (autoconfigured in the application), any of
+    // them accepting is enough.
+    $services
+        ->set('tmonier_company_accounts.company_order_eligibility_checker.account_holder', AccountHolderEligibilityChecker::class)
+        ->tag('tmonier_company_accounts.company_order_eligibility_checker', ['priority' => 100])
+    ;
+    $services
+        ->set('tmonier_company_accounts.company_order_eligibility_checker', CompositeCompanyOrderEligibilityChecker::class)
+        ->args([tagged_iterator('tmonier_company_accounts.company_order_eligibility_checker')])
+    ;
+    $services->alias(CompanyOrderEligibilityCheckerInterface::class, 'tmonier_company_accounts.company_order_eligibility_checker');
+
     $services->set('tmonier_company_accounts.member_change_guard', MemberChangeGuard::class);
     $services->alias(MemberChangeGuard::class, 'tmonier_company_accounts.member_change_guard');
+    $services
+        ->set('tmonier_company_accounts.member_updater', MemberUpdater::class)
+        ->args([
+            service('doctrine.orm.entity_manager'),
+            service('tmonier_company_accounts.repository.company_member'),
+            service('tmonier_company_accounts.member_change_guard'),
+        ])
+    ;
+    $services->alias(MemberUpdater::class, 'tmonier_company_accounts.member_updater');
 
     // Voters
     $services
@@ -68,6 +93,7 @@ return static function (ContainerConfigurator $container): void {
         ->args([service('event_dispatcher')])
         ->tag('doctrine.event_listener', ['event' => 'onFlush'])
         ->tag('doctrine.event_listener', ['event' => 'postFlush'])
+        ->tag('doctrine.event_listener', ['event' => 'onClear'])
         ->tag('kernel.reset', ['method' => 'reset'])
     ;
     $services
@@ -76,6 +102,7 @@ return static function (ContainerConfigurator $container): void {
             service('tmonier_company_accounts.repository.company_member'),
             service('tmonier_company_accounts.repository.company_order'),
             service('tmonier_company_accounts.factory.company_order'),
+            service('tmonier_company_accounts.company_order_eligibility_checker'),
         ])
         ->tag('doctrine.event_listener', ['event' => 'onFlush'])
     ;
@@ -109,7 +136,7 @@ return static function (ContainerConfigurator $container): void {
     ;
     $services
         ->set('tmonier_company_accounts.form.type.customer_autocomplete', CustomerAutocompleteType::class)
-        ->args([param('sylius.model.customer.class')])
+        ->args([param('sylius.model.customer.class'), param('tmonier_company_accounts.model.company_member.class')])
         ->tag('form.type')
         ->tag('ux.entity_autocomplete_field')
     ;
@@ -141,8 +168,7 @@ return static function (ContainerConfigurator $container): void {
             service('tmonier_company_accounts.current_member_resolver'),
             service('tmonier_company_accounts.repository.company_member'),
             service('tmonier_company_accounts.repository.company_order'),
-            service('tmonier_company_accounts.member_change_guard'),
-            service('doctrine.orm.entity_manager'),
+            service('tmonier_company_accounts.member_updater'),
             service('translator'),
         ])
         ->call('setContainer', [service(\Psr\Container\ContainerInterface::class)])
@@ -183,9 +209,9 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             service(ShopApiAccess::class),
             service('tmonier_company_accounts.repository.company_member'),
-            service('tmonier_company_accounts.member_change_guard'),
-            service('doctrine.orm.entity_manager'),
+            service('tmonier_company_accounts.member_updater'),
             service('translator'),
+            service('sylius.context.locale'),
         ])
         ->tag('api_platform.state_processor')
     ;

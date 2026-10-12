@@ -26,5 +26,8 @@ interface CompanyMemberRepositoryInterface extends RepositoryInterface
 
     public function findOneByIdAndCompany(int|string $id, CompanyInterface $company): ?CompanyMemberInterface;
 
+    /** Enabled admins of the company, counted in the database. */
+    public function countEnabledAdmins(CompanyInterface $company): int;
+
     public function findOneByIdAndCompanyId(int|string $id, int|string $companyId): ?CompanyMemberInterface;
 }

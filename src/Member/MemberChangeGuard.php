@@ -21,10 +21,13 @@ final class MemberChangeGuard
     public const ERROR_LAST_ADMIN = 'tmonier_company_accounts.member.last_admin';
 
     /**
+     * @param int|null $enabledAdmins enabled admins of the company, counted under a lock by
+     *                                MemberUpdater; the loaded members by default
+     *
      * @return string|null the translation key (domain `validators`) of the refusal, null when
      *                     the change is allowed
      */
-    public function check(CompanyMemberInterface $actor, CompanyMemberInterface $target, string $role, bool $enabled): ?string
+    public function check(CompanyMemberInterface $actor, CompanyMemberInterface $target, string $role, bool $enabled, ?int $enabledAdmins = null): ?string
     {
         $company = $actor->getCompany();
         if (!$actor->isActive() || !$actor->isAdmin() || null === $company || $target->getCompany() !== $company) {
@@ -41,7 +44,7 @@ final class MemberChangeGuard
             return self::ERROR_SELF;
         }
         $staysAdmin = CompanyMemberInterface::ROLE_ADMIN === $role && $enabled;
-        if ($target->isAdmin() && $target->isEnabled() && !$staysAdmin && count($company->getEnabledAdmins()) <= 1) {
+        if ($target->isAdmin() && $target->isEnabled() && !$staysAdmin && ($enabledAdmins ?? count($company->getEnabledAdmins())) <= 1) {
             return self::ERROR_LAST_ADMIN;
         }
 

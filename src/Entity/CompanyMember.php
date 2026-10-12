@@ -21,6 +21,8 @@ class CompanyMember implements CompanyMemberInterface
 
     protected string $role = self::ROLE_BUYER;
 
+    protected bool $customerGroupAssigned = false;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -65,6 +67,16 @@ class CompanyMember implements CompanyMemberInterface
     public function isAdmin(): bool
     {
         return self::ROLE_ADMIN === $this->role;
+    }
+
+    public function isCustomerGroupAssigned(): bool
+    {
+        return $this->customerGroupAssigned;
+    }
+
+    public function setCustomerGroupAssigned(bool $customerGroupAssigned): void
+    {
+        $this->customerGroupAssigned = $customerGroupAssigned;
     }
 
     public function isActive(): bool

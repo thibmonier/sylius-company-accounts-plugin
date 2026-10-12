@@ -40,6 +40,14 @@ interface CompanyMemberInterface extends ResourceInterface, ToggleableInterface,
 
     public function isAdmin(): bool;
 
+    /**
+     * The customer group of the customer was given by the company (default group): only then is
+     * it taken back when they leave, or moved when the company default changes.
+     */
+    public function isCustomerGroupAssigned(): bool;
+
+    public function setCustomerGroupAssigned(bool $customerGroupAssigned): void;
+
     /** The member and its company are both enabled. */
     public function isActive(): bool;
 }
