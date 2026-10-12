@@ -79,41 +79,71 @@ restrictions per company, shared address book, several companies per customer, a
 
 `MemberChangeGuard`: the actor is an active admin of the same company, the role exists, no
 change of one's own role or status (no self lock-out), and the last enabled admin cannot be
-demoted or disabled. In the account pages the actor is necessarily an enabled admin, so the
-last-admin rule is defence in depth (concurrent changes, API). Store administrators are not
-bound: a company can be created before its first admin is attached.
+demoted or disabled. Store administrators are not bound: a company can be created before its
+first admin is attached.
+
+Concurrency: `MemberUpdater` runs the guard and the write in one transaction that first locks
+the company row (`PESSIMISTIC_WRITE`), re-reads the actor and the target and counts the enabled
+admins in the database. Two admins demoting each other at the same time are serialised: the
+second request waits, then sees that its actor is no longer an admin and is refused. Shop page
+and shop API share it (`tests/TestApplication/config/dbal_savepoints.php` for DBAL 3).
 
 ### 3.4 Company orders
 
 `CompanyOrderListener` (onFlush): for orders inserted or updated with `checkoutState` becoming
-`completed`, when the order was placed by the account holder (`createdByGuest` false and a shop
-user) and the customer is an active member: persist a `CompanyOrder` in the same flush. Works
-for the shop, the API, admin tools and fixtures because it does not depend on a controller or a
-state machine adapter. Guest orders never count: Sylius attaches an existing customer to a
-guest checkout from the typed e-mail (the same issue was found in tier pricing).
+`completed`, when the order is eligible and the customer is an active member: persist a
+`CompanyOrder` in the same flush. It does not depend on a controller or a state machine
+adapter (shop, API, fixtures).
+
+Eligibility is an extension point: `CompanyOrderEligibilityCheckerInterface`, tagged
+`tmonier_company_accounts.company_order_eligibility_checker` (autoconfigured), an order is
+eligible when one checker accepts it. Shipped checkers:
+
+- `AccountHolderEligibilityChecker`: placed by the account holder (`createdByGuest` false and a
+  shop user). Guest orders never count: Sylius attaches an existing customer to a guest
+  checkout from the typed e-mail (the same issue was found in tier pricing).
+- `Bridge/AdminOrderCreation/StaffOrderEligibilityChecker`, registered only when the
+  tmonier/sylius-admin-order-creation-plugin bundle is enabled. Product decision: an order that
+  staff create for an active member of an active company is a company order (staff act on the
+  member's behalf). That plugin sets the customer without authorization (`createdByGuest`
+  stays true), so its marker is used: an `AdminOrderCreation` row for the order (in the
+  database, or scheduled for insertion in the running flush). That plugin is not modified.
 
 ### 3.5 Account owner bridge (order-hold kernel)
 
 Decision: **optional dependency** (`suggest` + `require-dev`), not `require`. The decorator
 `config/services/order_hold.php` is loaded only when `AccountOwnerResolverInterface` exists and
 uses `IGNORE_ON_INVALID_REFERENCE` (package installed, bundle disabled). Rules (table in the
-README): link recorded → its company; placed order without link → decorated (customer); cart
-or order completing in the current flush (detected from the unit of work original data) of a
-signed-in active member → company. Type `company`, identifier = company id.
+README): link recorded (in the database, or a `CompanyOrder` scheduled for insertion in the
+running flush) → its company; placed order without link → decorated (customer); cart or order
+completing in the current flush, when eligible (3.4), of an active member → company. Type
+`company`, identifier = company id.
+
+Inside a flush (onFlush, postFlush listeners) the unit of work has already copied the new
+values into the original data, so "completing now" is read from the change set
+(`getEntityChangeSet()['checkoutState']`) and from the scheduled insertions, never from the
+original data alone. Tested from onFlush and postFlush listeners, and for guest carts and guest
+checkouts in progress (always the customer).
 
 ### 3.6 Default customer group
 
 Applied in `CompanyChangeListener` (onFlush, `recomputeSingleEntityChangeSet` on the customer):
-given on joining if the customer has no group, taken back on leaving if unchanged, moved when
-the company default changes (members with no group or the previous default). It is the only
-core field the plugin writes.
+given on joining if the customer has no group, and then remembered on the membership
+(`CompanyMember::customerGroupAssigned`). Only a group the company gave is taken back on
+leaving (if still unchanged) or moved when the company default changes; members with no group
+receive the new default. A group the merchant set, before joining or after, is never touched.
+It is the only core field the plugin writes.
 
 ### 3.7 Events
 
 `CompanyChangeListener` derives `company.created/updated/deleted` and
 `member.added/role_changed/enabled_changed/removed` from the unit of work (any source),
 captures ids and codes before the flush and dispatches after it. No personal data in the event
-objects. A transactional outbox needs a `ChangeDetectorInterface` of the outbox plugin instead
+objects. A flush that fails never reaches postFlush: its queued events are dropped at the next
+flush and on `clear()`, so they are never dispatched by a later successful flush. Limitation:
+events are dispatched after the flush, not after an outer transaction opened by the caller
+(`wrapInTransaction`, Messenger `doctrine_transaction` middleware); if that outer transaction
+rolls back, the events have already been dispatched. A transactional outbox needs a `ChangeDetectorInterface` of the outbox plugin instead
 (documented, not shipped: no dependency on the outbox).
 
 ### 3.8 UI and API
@@ -123,9 +153,20 @@ objects. A transactional outbox needs a `ChangeDetectorInterface` of the outbox 
   card, account menu item for active members. Member edit = one small form per row with CSRF.
 - Admin: Sylius resource routes; members nested like product variants
   (`/companies/{companyId}/members`, repository `findOneByIdAndCompanyId` for edit and
-  detach), UX autocomplete on customers (e-mail, first and last name), customer page row.
+  detach), UX autocomplete on customers with a shop account and no company yet (e-mail, first
+and last name), customer page row. Member forms name the company and the customer (title,
+breadcrumbs, read-only customer on edit).
 - API: admin resources on the entities (identifier `code` for companies), shop read models
   (`ShopCompany`, `ShopCompanyMember`, `ShopCompanyOrder`) whose providers apply the voters.
+  Refusals (422) are translated in the request locale (`Accept-Language`, channel locales).
+
+### 3.9 Erasure (GDPR)
+
+The membership is removed (event `member.removed`) when the customer is deleted and when the
+shop user is deleted: Sylius 2 has no customer deletion in the back office, its "Delete" action
+on the customer page deletes the shop account. A former member without an account is then no
+longer listed to colleagues nor counted as an admin. Plugins that anonymise customers instead
+of deleting them keep the membership (name anonymised by them); detach the member if needed.
 
 ## 4. Decisions and open points
 
@@ -137,12 +178,14 @@ Conservative choices made where the brief and the memo were silent:
 2. **Company order = link recorded at checkout**, not "orders of the current members" (3.1).
    Orders placed before installing the plugin are not company orders.
 3. **Guest checkouts never become company orders** and never resolve to the company owner.
+   **Staff orders** (admin order creation plugin) for an active member do (3.4).
 4. **No self change at all** for a company admin in the shop (role and status), plus the
    last-admin rule.
 5. **Order-hold is optional** (3.5).
 6. **Company order pages hide addresses** and contact data; the buyer keeps the core pages
    (payment, tracking).
-7. **The default group does not follow the enabled flags** (only the membership).
+7. **The default group does not follow the enabled flags** (only the membership), and only a
+   group the company gave is ever taken back or moved.
 8. The store back office and admin API are not bound by the shop member rules.
 9. Sylius floor `^2.2.9 || ^2.3`, like the order-hold kernel (the plugin itself does not touch
    payment or cart).

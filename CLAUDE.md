@@ -8,9 +8,12 @@ Public docs: `README.md`.
 
 ## Before publishing
 
-- **Remove the path repository** (`repositories` in `composer.json`, `../sylius-order-hold-plugin`)
-  once tmonier/sylius-order-hold-plugin 1.0 is on Packagist: it is a `require-dev` (bridge
-  tests) and a `suggest`, never a `require`. CI cannot install it before that.
+- **Remove the path repository** (`repositories.order-hold` in `composer.json`,
+  `../sylius-order-hold-plugin`) once tmonier/sylius-order-hold-plugin 1.0 is on Packagist: it
+  is a `require-dev` (bridge tests) and a `suggest`, never a `require`. The CI workflow already
+  drops it (`composer config --unset repositories.order-hold`) and needs the published package:
+  CI cannot pass before order-hold is on Packagist. Remove that workflow step with the
+  repository.
 
 ## Commands
 
@@ -51,13 +54,21 @@ two orders each for the admin and the buyer. Dev server:
   through `Member/CurrentMemberResolver` (shop user token only). `company_orders_roles`
   (default admin + approver) drives ORDER_VIEW_COMPANY.
 - `Member/MemberChangeGuard`: shop-side rules (active admin of the same company, valid role,
-  no self change, keep one enabled admin). The store admin and the admin API are not bound.
+  no self change, keep one enabled admin). `Member/MemberUpdater` runs it with the write in a
+  transaction locking the company row (actor and target re-read, admins counted in the
+  database): used by the shop page and the shop API. The store admin and the admin API are not
+  bound. Test app: `dbal_savepoints.php` (DBAL 3).
 - `EventListener/CompanyChangeListener` (onFlush/postFlush): `Event/CompanyEvents` from the
   unit of work, dispatched after the flush, plus the default customer group sync.
   `EventListener/CompanyOrderListener` (onFlush): `CompanyOrder` for orders whose checkout
-  completes (insert or update) when placed by a signed-in active member
-  (`Member/CompanyOrderEligibility`: never for guest orders). `CustomerRemovalListener`
-  (preRemove): erasure of a customer removes the membership (event).
+  completes (insert or update) for an active member when the order is eligible
+  (`Member/CompanyOrderEligibilityCheckerInterface`, tagged, composite: account holder, never
+  guest orders; `Bridge/AdminOrderCreation/StaffOrderEligibilityChecker` loaded only when the
+  admin order creation bundle is enabled, parameter set at prepend time).
+  `CustomerRemovalListener` (preRemove of Customer and ShopUser): erasure removes the
+  membership (event). `CompanyChangeListener` drops the events of a failed flush (onFlush,
+  onClear) and only moves or takes back a customer group the company gave
+  (`CompanyMember::customerGroupAssigned`).
 - Shop pages: `Controller/Shop/CompanyAccountController` (`config/routes/shop.yaml`, under
   `/account`, Sylius access control), templates extend `@SyliusShop/account/common/index.html.twig`
   with hook prefixes `tmonier_company_accounts_shop.account.company.{show,members,orders,order}`
@@ -73,7 +84,10 @@ two orders each for the admin and the buyer. Dev server:
 - Bridge: `Bridge/OrderHold/CompanyAccountOwnerResolver`, `config/services/order_hold.php`
   loaded only if the order-hold interface exists, decoration ignored if its bundle is disabled.
   The test application enables order-hold and aliases the resolver publicly
-  (`tests/TestApplication/config/services.php`).
+  (`tests/TestApplication/config/services.php`). Inside a flush the resolver reads the change
+  set and the scheduled `CompanyOrder` insertions, never the original data alone.
+  The test application also enables tmonier/sylius-admin-order-creation-plugin (require-dev,
+  Packagist) for the staff order bridge.
 
 ## Rules
 

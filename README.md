@@ -18,14 +18,14 @@ the company admins in the shop.
 | Model the customer's company | **Company**: name, code, VAT number, registration number (SIREN, Companies House...), enabled flag, optional **default customer group** given to its members (prices, promotions). Own tables, no change to Customer, ShopUser or Order. |
 | Several buyers per company | **Members**: existing customers attached to one company each, with a role (**admin**, **buyer**, **approver**) and an enabled flag. Approvers are stored for the purchase approval plugin (v1b). |
 | Let the company manage its people | **My company** in the customer account: overview, **Members** (company admins change the role and the status of their colleagues; nobody changes themselves and the company keeps an enabled admin), **Company orders** (read-only). |
-| Show company orders without breaking privacy | An order is a **company order** when an active member places it while signed in (recorded at checkout, kept if the member leaves; orders placed before joining stay personal). Admins and approvers see them (configurable); buyers see their own orders as before. The core order pages stay owner-only. |
+| Show company orders without breaking privacy | An order is a **company order** when an active member places it while signed in, or when staff create it for them with [tmonier/sylius-admin-order-creation-plugin](https://github.com/thibmonier/sylius-admin-order-creation-plugin) (recorded at checkout, kept if the member leaves; orders placed before joining stay personal). Admins and approvers see them (configurable); buyers see their own orders as before. The core order pages stay owner-only. |
 | Minimise personal data | Members see the **names and roles** of their colleagues, never their e-mail or phone; company order pages show items, totals and states, not the addresses. |
-| Manage companies in the back office | *Customers > Companies*: grid, form, **members sub-grid** with *Attach a customer* (autocomplete), edit, *Detach*; the customer page shows the company and role. |
+| Manage companies in the back office | *Customers > Companies*: grid, form, **members sub-grid** with *Attach a customer* (autocomplete on customers with a shop account and no company), edit, *Detach*; the customer page shows the company and role. |
 | Headless | Admin API `/api/v2/admin/companies`, `/api/v2/admin/company-members`; shop API `/api/v2/shop/company`, `/company/members` (`PATCH` for admins), `/company/orders`. Own resources, the core ones are not overridden. |
 | Secure by construction | Exhaustive voters `COMPANY_VIEW`, `COMPANY_MANAGE_MEMBERS`, `ORDER_VIEW_OWN`, `ORDER_VIEW_COMPANY` on every page and API operation, tested against other companies, disabled members, disabled companies, non-members and visitors. |
 | Share one account between colleagues | With [tmonier/sylius-order-hold-plugin](https://github.com/thibmonier/sylius-order-hold-plugin): the **company becomes the account owner** of its members' orders (e.g. one trade credit line per company with tmonier/sylius-trade-credit-plugin). Optional. |
 | Feed other tools | **Events** after each change (`company.created`, `member.added`, `member.role_changed`...) for a webhook outbox, a timeline or an audit trail. |
-| GDPR | Deleting a customer deletes their membership (event `member.removed`); the members' data stays in the core customer. |
+| GDPR | Deleting a customer, or their shop account (the *Delete* action of the Sylius customer page), deletes their membership (event `member.removed`); the members' data stays in the core customer. |
 
 Also included: translations in English, French, German, Spanish, Italian, Dutch and Polish; a
 demo fixture; MySQL, MariaDB and PostgreSQL support (Schema API migration).
@@ -37,7 +37,7 @@ demo fixture; MySQL, MariaDB and PostgreSQL support (Schema API migration).
 | PHP | 8.2+ (Sylius 2.2), 8.3+ (Sylius 2.3) |
 | Sylius | 2.2.9+, 2.3 |
 | Symfony | 6.4, 7.4 (Sylius 2.2); 6.4, 7.4, 8.0 (Sylius 2.3, Symfony 8 needs PHP 8.4) |
-| Optional | tmonier/sylius-order-hold-plugin 1.0 (account owner bridge) |
+| Optional | tmonier/sylius-order-hold-plugin 1.0 (account owner bridge), tmonier/sylius-admin-order-creation-plugin 1.0 (staff orders count for the company) |
 
 Sylius 2.2.9 is the floor shared with the order-hold kernel (GHSA-2rv4-pjmm-7fxf and
 GHSA-vv4h-q2x8-74g4 are fixed from 2.2.9).
@@ -81,6 +81,8 @@ GHSA-vv4h-q2x8-74g4 are fixed from 2.2.9).
 
 6. Optional: to make the company the account owner of the order-hold kernel, install
    `tmonier/sylius-order-hold-plugin` and enable its bundle. Nothing else to configure.
+7. Optional: with `tmonier/sylius-admin-order-creation-plugin` enabled, orders that staff create
+   for an active member are company orders. Nothing else to configure.
 
 ## Configuration
 
@@ -114,12 +116,19 @@ the order is placed from their account. **Guest checkouts never count**: Sylius 
 existing customer to a guest order from the e-mail typed at checkout, so anybody knowing the
 e-mail of a member could otherwise place a company order.
 
+Orders created by staff with tmonier/sylius-admin-order-creation-plugin for an active member
+count too (staff act on the member's behalf; recognised by that plugin's `AdminOrderCreation`
+record). Other sources can be added with a service implementing
+`Member\CompanyOrderEligibilityCheckerInterface` (autoconfigured; an order is eligible when one
+checker accepts it).
+
 ### Default customer group
 
-When a customer joins a company with a default group and has no group, they get it; when they
-leave, it is taken back if it is still the company group; when the default group of the company
-changes, members with no group or the previous default move to the new one. Members with
-another group keep it. The group does not follow the enabled flags.
+When a customer joins a company with a default group and has no group, they get it, and the
+membership remembers that the company gave it. Only that group is taken back when they leave
+(if still unchanged) or moved when the default group of the company changes; members with no
+group get the new default. A group the merchant set, before joining or after, is never
+touched. The group does not follow the enabled flags.
 
 ### Account owner (order-hold kernel)
 
@@ -130,7 +139,7 @@ is decorated:
 |---|---|
 | A customer, active member | their company (`type: company`, identifier: company id) |
 | A placed order recorded as a company order | that company, even if the member left since |
-| A cart, or an order completing in the current flush, of a signed-in active member | their company |
+| A cart, or an order completing in the current flush (also from onFlush / postFlush listeners), of an active member, signed in or served by staff | their company |
 | Anything else (guest orders, personal orders, disabled members or companies) | the decorated resolver (the customer) |
 
 ### Events
@@ -143,7 +152,9 @@ Symfony events, dispatched after the flush that made the change:
 | `tmonier_company_accounts.member.added` / `.role_changed` / `.enabled_changed` / `.removed` | `CompanyMemberEvent` |
 
 Ids and codes are captured before the flush (available for deleted rows); no personal data is
-copied into the events. To publish them with tmonier/sylius-webhook-outbox-plugin in the same
+copied into the events. The events of a flush that fails are dropped, never dispatched by a later
+flush. They are dispatched after the flush, not after an outer transaction opened by the caller
+(`wrapInTransaction`, Messenger `doctrine_transaction`). To publish them with tmonier/sylius-webhook-outbox-plugin in the same
 transaction as the change, implement its `Capture\ChangeDetectorInterface` on the company
 entities (the outbox records during `onFlush`); a listener of these events runs after the
 commit. tmonier/sylius-audit-log-plugin can audit the entities directly:
@@ -163,7 +174,7 @@ tmonier_sylius_audit_log:
 |---|---|---|
 | `GET /api/v2/shop/company` | signed-in member | code, name, VAT and registration numbers, own role, members count, permissions |
 | `GET /api/v2/shop/company/members`, `GET .../members/{id}` | signed-in member | first name, last name, role, enabled, `me` |
-| `PATCH /api/v2/shop/company/members/{id}` | company admin | `{"role": "approver", "enabled": false}` (`application/merge-patch+json`); 422 for self changes and the last admin |
+| `PATCH /api/v2/shop/company/members/{id}` | company admin | `{"role": "approver", "enabled": false}` (`application/merge-patch+json`); 422 for self changes and the last admin, translated in the request locale (`Accept-Language`) |
 | `GET /api/v2/shop/company/orders`, `GET .../orders/{number}` | admin, approver | number, date, placed by, states, totals, items |
 | `/api/v2/admin/companies` (`{code}`) | administrators | CRUD |
 | `/api/v2/admin/company-members` (`{id}`) | administrators | attach (`company`, `customer` IRIs, `role`), `PUT` role / enabled, detach; filter `?company.code=` |
@@ -180,8 +191,11 @@ for a disabled membership or company, or a missing permission.
 | `sylius_shop.account.dashboard.index.content.main` → `tmonier_company` | Company card of the dashboard |
 | `sylius_admin.customer.show.content.sections.general` → `tmonier_company` | Company row of the admin customer page |
 | `tmonier_company_accounts_admin.company.update.content.header.title_block.actions` → `members` | Members button of the company form |
+| `tmonier_company_accounts_admin.company_member.{create,update}.content.header` → `breadcrumbs`, `...header.title_block` → `title` | Company and customer of the member form |
+| `tmonier_company_accounts_admin.company_member.update.content.form.sections.general` → `member` | Read-only customer and company of the edited member |
 
-Services: `CurrentMemberResolverInterface`, `MemberChangeGuard`, the voters
+Services: `CurrentMemberResolverInterface`, `MemberChangeGuard` (rules) and `MemberUpdater`
+(rules and write under a lock), `CompanyOrderEligibilityCheckerInterface` (tagged), the voters
 (`tmonier_company_accounts.voter.company`, `.voter.order`) and the member factory
 (`CompanyMemberFactoryInterface::createForCustomer()`).
 
@@ -198,13 +212,21 @@ Services: `CurrentMemberResolverInterface`, `MemberChangeGuard`, the voters
 - The VAT number is not checked against VIES.
 - Deleting a company deletes its memberships and its company order links (the orders stay):
   disable it instead to keep the history.
+- Plugins that anonymise customers instead of deleting them keep the membership (with the
+  anonymised name): detach the member if needed.
 - Changing a company's default group touches every member in the flush (fine for tens or
   hundreds of members, not for huge companies).
 
 ## Development
 
+Until tmonier/sylius-order-hold-plugin is on Packagist, `composer.json` resolves it from a
+sibling checkout (`../sylius-order-hold-plugin`, path repository `order-hold`; the CI workflow
+removes it with `composer config --unset repositories.order-hold` and installs the published
+package).
+
 ```bash
-docker compose up -d mysql mailhog   # empty root password; host ports in compose.override.yml
+cp compose.override.dist.yml compose.override.yml   # publishes MySQL on 3306 and MailHog (or run `make init`)
+docker compose up -d mysql mailhog   # empty root password
 composer install
 (cd vendor/sylius/test-application && yarn install && yarn build)
 vendor/bin/console doctrine:database:create
