@@ -146,8 +146,16 @@ Ids and codes are captured before the flush (available for deleted rows); no per
 copied into the events. To publish them with tmonier/sylius-webhook-outbox-plugin in the same
 transaction as the change, implement its `Capture\ChangeDetectorInterface` on the company
 entities (the outbox records during `onFlush`); a listener of these events runs after the
-commit. tmonier/sylius-audit-log-plugin can audit the entities directly: add
-`Tmonier\SyliusCompanyAccountsPlugin\Entity\Company` and `CompanyMember` to its `resources`.
+commit. tmonier/sylius-audit-log-plugin can audit the entities directly:
+
+```yaml
+tmonier_sylius_audit_log:
+    resources:
+        company:
+            class: Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface
+        company_member:
+            class: Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface
+```
 
 ## API
 
