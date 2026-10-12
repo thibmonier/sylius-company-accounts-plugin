@@ -1,0 +1,11 @@
+{% import '@SyliusAdmin/shared/helper/header.html.twig' as header %}
+
+{% set member = hookable_metadata.context.resource %}
+
+<div class="col-12 col-md" {{ sylius_test_html_attribute('tmonier-company-member-title') }}>
+    {% if member.id is null %}
+        {{ header.h1('tmonier_company_accounts.ui.attach_customer_to'|trans({'%company%': member.company.name}), 'tabler:user-plus') }}
+    {% else %}
+        {{ header.h1('tmonier_company_accounts.ui.edit_member_of'|trans({'%member%': member.customer.fullName|trim ?: member.customer.email, '%company%': member.company.name}), 'tabler:user-edit') }}
+    {% endif %}
+</div>

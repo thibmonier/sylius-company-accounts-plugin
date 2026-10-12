@@ -1,0 +1,12 @@
+{% from '@SyliusAdmin/shared/helper/breadcrumbs.html.twig' import breadcrumbs %}
+
+{% set member = hookable_metadata.context.resource %}
+{% set company = member.company %}
+
+{{ breadcrumbs([
+    { name: 'sylius.ui.dashboard', url: path('sylius_admin_dashboard'), active: false },
+    { name: 'tmonier_company_accounts.ui.companies'|trans, url: path('tmonier_company_accounts_admin_company_index'), active: false },
+    { name: company.name, url: path('tmonier_company_accounts_admin_company_update', {'id': company.id}), active: false },
+    { name: 'tmonier_company_accounts.ui.members'|trans, url: path('tmonier_company_accounts_admin_company_member_index', {'companyId': company.id}), active: false },
+    { name: member.id is null ? 'tmonier_company_accounts.ui.attach_customer'|trans : (member.customer.fullName|trim ?: member.customer.email), active: true },
+]) }}

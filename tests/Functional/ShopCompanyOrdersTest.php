@@ -80,6 +80,12 @@ final class ShopCompanyOrdersTest extends WebTestCase
         $crawler = $this->client->request('GET', $this->shopUrl('/account/company/orders?page=2'));
         $secondPage = $crawler->filter('[data-test-tmonier-company-order]')->each(static fn ($row): string => (string) $row->attr('data-test-tmonier-company-order'));
 
+        self::assertSame('2', $crawler->filter('.pagination [aria-current="page"]')->text());
+
+        // Out of range (old bookmark, fewer orders since): the last page, never the empty state.
+        $this->client->request('GET', $this->shopUrl('/account/company/orders?page=99'));
+        self::assertResponseRedirects($this->shopUrl('/account/company/orders?page=2'));
+
         self::assertCount(20, $firstPage);
         self::assertCount(3, $secondPage);
         $all = array_map(static fn ($order): string => (string) $order->getNumber(), $orders);

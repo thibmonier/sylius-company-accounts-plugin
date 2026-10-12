@@ -17,6 +17,32 @@ sylius_twig_hooks:
                 template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/index/title.html.twig'
                 priority: 100
 
+        # Attach / edit a member: company and customer in the breadcrumbs, title and form.
+        'tmonier_company_accounts_admin.company_member.create.content.header':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/form/breadcrumbs.html.twig'
+                priority: 100
+
+        'tmonier_company_accounts_admin.company_member.update.content.header':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/form/breadcrumbs.html.twig'
+                priority: 100
+
+        'tmonier_company_accounts_admin.company_member.create.content.header.title_block':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/form/title.html.twig'
+                priority: 100
+
+        'tmonier_company_accounts_admin.company_member.update.content.header.title_block':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/form/title.html.twig'
+                priority: 100
+
+        'tmonier_company_accounts_admin.company_member.update.content.form.sections.general':
+            member:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/form/member.html.twig'
+                priority: 10
+
         # Customer page: company and role.
         'sylius_admin.customer.show.content.sections.general':
             tmonier_company:

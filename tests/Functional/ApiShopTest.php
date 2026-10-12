@@ -136,6 +136,22 @@ final class ApiShopTest extends WebTestCase
         self::assertFalse($buyer->isEnabled(), 'Unchanged by the refused requests.');
     }
 
+    public function testRefusalsAreTranslatedInTheRequestLocale(): void
+    {
+        $s = new CompanyScenario($this->catalog());
+        $this->catalog()->channelLocale('fr_FR');
+        $path = '/api/v2/shop/company/members/' . $this->idOf($s->adminA);
+        $headers = $this->shopApiHeaders(CompanyScenario::customerOf($s->adminA), 'application/merge-patch+json');
+
+        $this->client->request('PATCH', $path, server: $headers + ['HTTP_ACCEPT_LANGUAGE' => 'fr_FR'], content: '{"role": "buyer"}');
+
+        self::assertResponseStatusCodeSame(422);
+        $detail = $this->json()['detail'] ?? null;
+        self::assertIsString($detail);
+        self::assertNotSame('You cannot change your own role or status.', $detail);
+        self::assertSame(self::translated('tmonier_company_accounts.member.self_change', 'fr_FR'), $detail);
+    }
+
     public function testCompanyOrdersAreReadOnlyViews(): void
     {
         $s = new CompanyScenario($this->catalog());
@@ -173,5 +189,13 @@ final class ApiShopTest extends WebTestCase
         foreach (['/api/v2/shop/company', '/api/v2/shop/company/members', '/api/v2/shop/company/members/{id}', '/api/v2/shop/company/orders', '/api/v2/shop/company/orders/{number}', '/api/v2/admin/companies', '/api/v2/admin/company-members'] as $path) {
             self::assertArrayHasKey($path, $paths);
         }
+    }
+
+    private static function translated(string $key, string $locale): string
+    {
+        $translator = self::getContainer()->get('translator');
+        self::assertInstanceOf(\Symfony\Contracts\Translation\TranslatorInterface::class, $translator);
+
+        return $translator->trans($key, [], 'validators', $locale);
     }
 }

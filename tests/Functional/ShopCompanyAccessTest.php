@@ -102,7 +102,9 @@ final class ShopCompanyAccessTest extends WebTestCase
             if (null !== $member) {
                 $this->loginShopUser(CompanyScenario::customerOf($member));
             }
-            $this->client->request('POST', $this->shopUrl('/account/company/members/' . $id), ['role' => 'admin', 'enabled' => '1', '_csrf_token' => 'whatever']);
+            // A valid token of the actor's own session: a 403 is the permission, not the CSRF check.
+            $token = null === $member ? 'none' : $this->sessionCsrfToken('tmonier_company_member_' . $id);
+            $this->client->request('POST', $this->shopUrl('/account/company/members/' . $id), ['role' => 'admin', 'enabled' => '1', '_csrf_token' => $token]);
             self::assertSame($expected, $this->client->getResponse()->getStatusCode(), $label);
         }
 

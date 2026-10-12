@@ -9,9 +9,13 @@ use Sylius\Component\Core\Model\AdminUserInterface;
 use Sylius\Component\Core\Model\CustomerInterface;
 use Sylius\Component\Core\Model\ShopUserInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\DomCrawler\Form;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use Symfony\Component\Security\Csrf\TokenStorage\SessionTokenStorage;
 use Tests\Tmonier\SyliusCompanyAccountsPlugin\CompanyAccountsTestTrait;
 
 trait FunctionalTestTrait
@@ -103,6 +107,23 @@ trait FunctionalTestTrait
         $flashes = $crawler->filter('[data-test-flash-messages]')->each(static fn (Crawler $node): string => trim($node->text()));
 
         return $flashes;
+    }
+
+    /**
+     * A valid CSRF token of the browser session (the signed-in user's), for requests that no
+     * rendered form offers to that user.
+     */
+    private function sessionCsrfToken(string $id): string
+    {
+        $this->client->request('GET', $this->shopUrl('/'));
+        $request = $this->client->getRequest();
+        $session = $request->getSession();
+        $manager = new CsrfTokenManager(null, new SessionTokenStorage(new RequestStack([$request])));
+        $value = $manager->getToken($id)->getValue();
+        $session->save();
+        $this->client->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
+
+        return $value;
     }
 
     private function choice(Form $form, string $name): ChoiceFormField

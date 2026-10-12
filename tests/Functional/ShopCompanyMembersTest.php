@@ -39,6 +39,14 @@ final class ShopCompanyMembersTest extends WebTestCase
         self::assertCount(3, $crawler->filter('form[data-test-tmonier-company-member-form]'), 'Every colleague but themselves.');
         self::assertCount(0, $crawler->filter(sprintf('[data-test-tmonier-company-member-form="%d"]', $this->idOf($s->adminA))));
 
+        // Every control names the colleague it acts on (screen readers), the actions column too.
+        $row = $crawler->filter(sprintf('[data-test-tmonier-company-member="%d"]', $this->idOf($s->buyerA)));
+        $name = CompanyScenario::customerOf($s->buyerA)->getFullName();
+        self::assertSame('Role of ' . $name, $row->filter('select[name="role"]')->attr('aria-label'));
+        self::assertStringContainsString($name, $row->filter('label[for^="tmonier-member-enabled-"]')->text());
+        self::assertStringContainsString($name, $row->filter('button[type="submit"]')->text());
+        self::assertSame('Actions', trim($crawler->filter('[data-test-tmonier-company-members] thead th')->last()->text()));
+
         $form = $crawler->filter(sprintf('[data-test-tmonier-company-member-form="%d"]', $this->idOf($s->buyerA)))->form();
         $this->choice($form, 'role')->select('approver');
         $this->choice($form, 'enabled')->untick();
@@ -109,25 +117,6 @@ final class ShopCompanyMembersTest extends WebTestCase
 
     private function csrfToken(string $id): string
     {
-        // The token of the browser session: read it from a rendered form.
-        $crawler = $this->client->request('GET', $this->shopUrl('/account/company/members'));
-        $input = $crawler->filter('input[name="_csrf_token"]');
-        if (0 === $input->count()) {
-            self::fail('No CSRF token on the members page.');
-        }
-        $form = $crawler->filter(sprintf('form[data-test-tmonier-company-member-form="%s"]', substr($id, strlen('tmonier_company_member_'))));
-        if (1 === $form->count()) {
-            return (string) $form->filter('input[name="_csrf_token"]')->attr('value');
-        }
-
-        // No form for that member (e.g. themselves): generate one in the same session.
-        $session = $this->client->getRequest()->getSession();
-        $storage = new \Symfony\Component\Security\Csrf\TokenStorage\SessionTokenStorage(new \Symfony\Component\HttpFoundation\RequestStack([$this->client->getRequest()]));
-        $manager = new \Symfony\Component\Security\Csrf\CsrfTokenManager(null, $storage);
-        $value = $manager->getToken($id)->getValue();
-        $session->save();
-        $this->client->getCookieJar()->set(new \Symfony\Component\BrowserKit\Cookie($session->getName(), $session->getId()));
-
-        return $value;
+        return $this->sessionCsrfToken($id);
     }
 }

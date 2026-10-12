@@ -1,6 +1,6 @@
 {% set context = hookable_metadata.context %}
 
-{% if context.orders is empty %}
+{% if context.total == 0 %}
     <div class="alert alert-light" {{ sylius_test_html_attribute('tmonier-company-orders-empty') }}>{{ 'tmonier_company_accounts.ui.no_company_orders'|trans }}</div>
 {% else %}
     <div class="table-responsive">
@@ -35,7 +35,7 @@
         <nav aria-label="{{ 'tmonier_company_accounts.ui.company_orders'|trans }}">
             <ul class="pagination">
                 {% for p in 1..context.pages %}
-                    <li class="page-item {{ p == context.current_page ? 'active' }}"><a class="page-link" href="{{ path('tmonier_company_accounts_shop_company_orders', {'page': p}) }}">{{ p }}</a></li>
+                    <li class="page-item {{ p == context.current_page ? 'active' }}"><a class="page-link" href="{{ path('tmonier_company_accounts_shop_company_orders', {'page': p}) }}" {% if p == context.current_page %}aria-current="page"{% endif %}>{{ p }}</a></li>
                 {% endfor %}
             </ul>
         </nav>

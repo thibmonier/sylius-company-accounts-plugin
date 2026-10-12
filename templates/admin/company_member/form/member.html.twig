@@ -1,0 +1,11 @@
+{% set member = hookable_metadata.context.resource %}
+
+<dl class="row mb-3" {{ sylius_test_html_attribute('tmonier-company-member-context') }}>
+    <dt class="col-12 col-md-3">{{ 'sylius.ui.customer'|trans }}</dt>
+    <dd class="col-12 col-md-9">
+        <a href="{{ path('sylius_admin_customer_show', {'id': member.customer.id}) }}">{{ member.customer.fullName|trim ?: '-' }}</a>
+        &lt;{{ member.customer.email }}&gt;
+    </dd>
+    <dt class="col-12 col-md-3">{{ 'tmonier_company_accounts.ui.company'|trans }}</dt>
+    <dd class="col-12 col-md-9 mb-0">{{ member.company.name }}</dd>
+</dl>
