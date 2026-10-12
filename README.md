@@ -196,6 +196,8 @@ Services: `CurrentMemberResolverInterface`, `MemberChangeGuard`, the voters
 - Customers are attached by the store (back office or admin API); company admins cannot invite
   or attach customers in this version.
 - The VAT number is not checked against VIES.
+- Deleting a company deletes its memberships and its company order links (the orders stay):
+  disable it instead to keep the history.
 - Changing a company's default group touches every member in the flush (fine for tens or
   hundreds of members, not for huge companies).
 

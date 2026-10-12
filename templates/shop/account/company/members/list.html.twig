@@ -40,7 +40,7 @@
                         </td>
                     {% else %}
                         <td>{{ ('tmonier_company_accounts.role.' ~ member.role)|trans }}</td>
-                        <td>{{ member.enabled ? 'sylius.ui.yes'|trans : 'sylius.ui.no'|trans }}</td>
+                        <td>{{ member.enabled ? 'sylius.ui.enabled'|trans : 'sylius.ui.disabled'|trans }}</td>
                         {% if can_manage %}<td></td>{% endif %}
                     {% endif %}
                 </tr>
