@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/services/constraint-mapping-1.0.xsd">
+    <class name="Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMember">
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">customer</option>
+            <option name="message">tmonier_company_accounts.member.customer_unique</option>
+            <option name="errorPath">customer</option>
+            <option name="groups">sylius</option>
+        </constraint>
+        <property name="company">
+            <constraint name="NotNull">
+                <option name="groups">sylius</option>
+            </constraint>
+        </property>
+        <property name="customer">
+            <constraint name="NotNull">
+                <option name="message">tmonier_company_accounts.member.customer_not_blank</option>
+                <option name="groups">sylius</option>
+            </constraint>
+        </property>
+        <property name="role">
+            <constraint name="Choice">
+                <option name="choices">
+                    <value>admin</value>
+                    <value>buyer</value>
+                    <value>approver</value>
+                </option>
+                <option name="message">tmonier_company_accounts.member.invalid_role</option>
+                <option name="groups">sylius</option>
+            </constraint>
+        </property>
+    </class>
+</constraint-mapping>

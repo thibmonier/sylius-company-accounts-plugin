@@ -1,0 +1,104 @@
+tmonier_company_accounts_admin_company:
+    resource: |
+        alias: tmonier_company_accounts.company
+        section: admin
+        templates: "@SyliusAdmin\\shared\\crud"
+        except: ['show']
+        redirect: update
+        grid: tmonier_company_accounts_admin_company
+        form:
+            type: Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyType
+        permission: true
+        path: companies
+        vars:
+            all:
+                hook_prefix: tmonier_company_accounts_admin.company
+    type: sylius.resource
+
+# Members of a company: sub-grid, attach an existing customer, edit role / status, detach.
+tmonier_company_accounts_admin_company_member_index:
+    path: /companies/{companyId}/members
+    methods: [GET]
+    requirements:
+        companyId: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.company_member::indexAction
+        _sylius:
+            section: admin
+            permission: true
+            template: "@SyliusAdmin/shared/crud/index.html.twig"
+            grid: tmonier_company_accounts_admin_company_member
+            vars:
+                hook_prefix: tmonier_company_accounts_admin.company_member
+                company: "expr:notFoundOnNull(service('tmonier_company_accounts.repository.company').find($companyId))"
+                route:
+                    parameters:
+                        companyId: $companyId
+
+tmonier_company_accounts_admin_company_member_create:
+    path: /companies/{companyId}/members/new
+    methods: [GET, POST]
+    requirements:
+        companyId: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.company_member::createAction
+        _sylius:
+            section: admin
+            permission: true
+            template: "@SyliusAdmin/shared/crud/create.html.twig"
+            form: Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyMemberType
+            factory:
+                method: createForCompany
+                arguments: [$companyId]
+            redirect:
+                route: tmonier_company_accounts_admin_company_member_index
+                parameters: { companyId: $companyId }
+            vars:
+                hook_prefix: tmonier_company_accounts_admin.company_member
+                route:
+                    parameters:
+                        companyId: $companyId
+
+tmonier_company_accounts_admin_company_member_update:
+    path: /companies/{companyId}/members/{id}/edit
+    methods: [GET, PUT, PATCH]
+    requirements:
+        companyId: '\d+'
+        id: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.company_member::updateAction
+        _sylius:
+            section: admin
+            permission: true
+            template: "@SyliusAdmin/shared/crud/update.html.twig"
+            form: Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyMemberType
+            repository:
+                method: findOneByIdAndCompanyId
+                arguments: [$id, $companyId]
+            redirect:
+                route: tmonier_company_accounts_admin_company_member_index
+                parameters: { companyId: $companyId }
+            vars:
+                hook_prefix: tmonier_company_accounts_admin.company_member
+                route:
+                    parameters:
+                        id: $id
+                        companyId: $companyId
+
+tmonier_company_accounts_admin_company_member_delete:
+    path: /companies/{companyId}/members/{id}
+    methods: [DELETE]
+    requirements:
+        companyId: '\d+'
+        id: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.company_member::deleteAction
+        _sylius:
+            section: admin
+            permission: true
+            repository:
+                method: findOneByIdAndCompanyId
+                arguments: [$id, $companyId]
+            redirect:
+                route: tmonier_company_accounts_admin_company_member_index
+                parameters: { companyId: $companyId }

@@ -1,0 +1,6 @@
+{% set company = hookable_metadata.context.resource %}
+
+<a class="btn" href="{{ path('tmonier_company_accounts_admin_company_member_index', {'companyId': company.id}) }}" {{ sylius_test_html_attribute('tmonier-company-members-button') }}>
+    {{ ux_icon('tabler:users', {'class': 'icon dropdown-item-icon'}) }}
+    {{ 'tmonier_company_accounts.ui.members'|trans }} ({{ company.members|length }})
+</a>

@@ -1,0 +1,8 @@
+{% set company = hookable_metadata.context.company %}
+{% set member = hookable_metadata.context.member %}
+
+<h1 {{ sylius_test_html_attribute('tmonier-company-name') }}>{{ company.name }}</h1>
+<div class="text-body-secondary">
+    {{ 'tmonier_company_accounts.ui.your_role'|trans }}:
+    <span class="fw-semibold" {{ sylius_test_html_attribute('tmonier-company-role') }}>{{ ('tmonier_company_accounts.role.' ~ member.role)|trans }}</span>
+</div>

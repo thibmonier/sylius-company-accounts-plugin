@@ -1,0 +1,83 @@
+sylius_twig_hooks:
+    hooks:
+        # Customer dashboard: the company card (members only).
+        'sylius_shop.account.dashboard.index.content.main':
+            tmonier_company:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/dashboard/company.html.twig'
+                priority: -50
+
+        # Company area: show.
+        'tmonier_company_accounts_shop.account.company.show.index.content':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/breadcrumbs.html.twig'
+                priority: 200
+
+        'tmonier_company_accounts_shop.account.company.show.index.content.main.header':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/title.html.twig'
+                priority: 100
+            navigation:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/navigation.html.twig'
+                priority: 0
+
+        'tmonier_company_accounts_shop.account.company.show.index.content.main':
+            section:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/show/details.html.twig'
+                priority: -10
+
+        # Company area: members.
+        'tmonier_company_accounts_shop.account.company.members.index.content':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/breadcrumbs.html.twig'
+                priority: 200
+
+        'tmonier_company_accounts_shop.account.company.members.index.content.main.header':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/title.html.twig'
+                priority: 100
+            navigation:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/navigation.html.twig'
+                priority: 0
+
+        'tmonier_company_accounts_shop.account.company.members.index.content.main':
+            section:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/members/list.html.twig'
+                priority: -10
+
+        # Company area: orders.
+        'tmonier_company_accounts_shop.account.company.orders.index.content':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/breadcrumbs.html.twig'
+                priority: 200
+
+        'tmonier_company_accounts_shop.account.company.orders.index.content.main.header':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/title.html.twig'
+                priority: 100
+            navigation:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/navigation.html.twig'
+                priority: 0
+
+        'tmonier_company_accounts_shop.account.company.orders.index.content.main':
+            section:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/orders/list.html.twig'
+                priority: -10
+
+        # Company area: order.
+        'tmonier_company_accounts_shop.account.company.order.index.content':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/breadcrumbs.html.twig'
+                priority: 200
+
+        'tmonier_company_accounts_shop.account.company.order.index.content.main.header':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/title.html.twig'
+                priority: 100
+            navigation:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/navigation.html.twig'
+                priority: 0
+
+        'tmonier_company_accounts_shop.account.company.order.index.content.main':
+            section:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/order/details.html.twig'
+                priority: -10

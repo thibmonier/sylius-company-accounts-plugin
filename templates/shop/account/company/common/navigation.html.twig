@@ -1,0 +1,16 @@
+{% set company = hookable_metadata.context.company %}
+{% set page = hookable_metadata.context.page %}
+
+<ul class="nav nav-tabs mt-4" {{ sylius_test_html_attribute('tmonier-company-navigation') }}>
+    <li class="nav-item">
+        <a class="nav-link {{ page == 'show' ? 'active' }}" href="{{ path('tmonier_company_accounts_shop_company_show') }}">{{ 'tmonier_company_accounts.ui.overview'|trans }}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ page == 'members' ? 'active' }}" href="{{ path('tmonier_company_accounts_shop_company_members') }}">{{ 'tmonier_company_accounts.ui.members'|trans }}</a>
+    </li>
+    {% if is_granted('ORDER_VIEW_COMPANY', company) %}
+        <li class="nav-item">
+            <a class="nav-link {{ page == 'orders' ? 'active' }}" href="{{ path('tmonier_company_accounts_shop_company_orders') }}" {{ sylius_test_html_attribute('tmonier-company-orders-link') }}>{{ 'tmonier_company_accounts.ui.company_orders'|trans }}</a>
+        </li>
+    {% endif %}
+</ul>

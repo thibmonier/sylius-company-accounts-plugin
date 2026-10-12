@@ -1,0 +1,15 @@
+tmonier_company_accounts:
+    company:
+        code:
+            unique: 'Deze code wordt al door een ander bedrijf gebruikt.'
+            not_blank: 'Voer de bedrijfscode in.'
+            regex: 'De code mag alleen letters, cijfers, streepjes en underscores bevatten.'
+        name:
+            not_blank: 'Voer de bedrijfsnaam in.'
+    member:
+        customer_unique: 'Deze klant hoort al bij een bedrijf.'
+        customer_not_blank: 'Kies een klant.'
+        invalid_role: 'Deze rol bestaat niet.'
+        not_allowed: 'Alleen een actieve beheerder van het bedrijf kan de leden wijzigen.'
+        self_change: 'U kunt uw eigen rol of status niet wijzigen.'
+        last_admin: 'Het bedrijf moet minstens één actieve beheerder houden.'

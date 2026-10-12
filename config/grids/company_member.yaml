@@ -1,0 +1,86 @@
+sylius_grid:
+    grids:
+        tmonier_company_accounts_admin_company_member:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: "%tmonier_company_accounts.model.company_member.class%"
+                    repository:
+                        method: createListQueryBuilderByCompanyId
+                        arguments: [$companyId]
+            sorting:
+                lastName: asc
+            fields:
+                customer:
+                    type: twig
+                    label: sylius.ui.customer
+                    path: .
+                    options:
+                        template: "@TmonierSyliusCompanyAccountsPlugin/admin/company_member/grid/field/customer.html.twig"
+                lastName:
+                    type: string
+                    label: sylius.ui.last_name
+                    path: customer.lastName
+                    sortable: customer.lastName
+                firstName:
+                    type: string
+                    label: sylius.ui.first_name
+                    path: customer.firstName
+                    sortable: customer.firstName
+                role:
+                    type: twig
+                    label: tmonier_company_accounts.ui.role
+                    sortable: ~
+                    options:
+                        template: "@TmonierSyliusCompanyAccountsPlugin/admin/company_member/grid/field/role.html.twig"
+                enabled:
+                    type: twig
+                    label: sylius.ui.enabled
+                    sortable: ~
+                    options:
+                        template: "@SyliusAdmin/shared/grid/field/boolean.html.twig"
+                createdAt:
+                    type: datetime
+                    label: tmonier_company_accounts.ui.member_since
+                    sortable: ~
+                    options:
+                        format: Y-m-d
+            filters:
+                search:
+                    type: string
+                    label: sylius.ui.search
+                    options:
+                        fields: [customer.email, customer.firstName, customer.lastName]
+                role:
+                    type: select
+                    label: tmonier_company_accounts.ui.role
+                    form_options:
+                        choices:
+                            tmonier_company_accounts.role.admin: admin
+                            tmonier_company_accounts.role.buyer: buyer
+                            tmonier_company_accounts.role.approver: approver
+            actions:
+                main:
+                    create:
+                        type: create
+                        label: tmonier_company_accounts.ui.attach_customer
+                        options:
+                            link:
+                                parameters:
+                                    companyId: $companyId
+                item:
+                    update:
+                        type: update
+                        options:
+                            link:
+                                parameters:
+                                    id: resource.id
+                                    companyId: $companyId
+                    delete:
+                        type: delete
+                        label: tmonier_company_accounts.ui.detach
+                        options:
+                            link:
+                                parameters:
+                                    id: resource.id
+                                    companyId: $companyId

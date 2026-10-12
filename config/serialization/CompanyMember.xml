@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+
+<serializer xmlns="http://symfony.com/schema/dic/serializer-mapping"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/serializer-mapping https://symfony.com/schema/dic/serializer-mapping/serializer-mapping-1.0.xsd"
+>
+    <class name="Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMember">
+        <attribute name="id">
+            <group>tmonier_company_accounts:admin:company_member:index</group>
+            <group>tmonier_company_accounts:admin:company_member:show</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+        <attribute name="company">
+            <group>tmonier_company_accounts:admin:company_member:index</group>
+            <group>tmonier_company_accounts:admin:company_member:show</group>
+            <group>tmonier_company_accounts:admin:company_member:create</group>
+        </attribute>
+        <attribute name="customer">
+            <group>tmonier_company_accounts:admin:company_member:index</group>
+            <group>tmonier_company_accounts:admin:company_member:show</group>
+            <group>tmonier_company_accounts:admin:company_member:create</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+        <attribute name="role">
+            <group>tmonier_company_accounts:admin:company_member:index</group>
+            <group>tmonier_company_accounts:admin:company_member:show</group>
+            <group>tmonier_company_accounts:admin:company_member:create</group>
+            <group>tmonier_company_accounts:admin:company_member:update</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+        <attribute name="enabled">
+            <group>tmonier_company_accounts:admin:company_member:index</group>
+            <group>tmonier_company_accounts:admin:company_member:show</group>
+            <group>tmonier_company_accounts:admin:company_member:create</group>
+            <group>tmonier_company_accounts:admin:company_member:update</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+        <attribute name="createdAt">
+            <group>tmonier_company_accounts:admin:company_member:show</group>
+        </attribute>
+        <attribute name="updatedAt">
+            <group>tmonier_company_accounts:admin:company_member:show</group>
+        </attribute>
+    </class>
+</serializer>

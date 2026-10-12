@@ -1,0 +1,6 @@
+{% extends '@SyliusShop/account/common/index.html.twig' %}
+
+{% set prefixes = ['tmonier_company_accounts_shop.account.company.order'] %}
+{% set attrs = { company, member, order, page: 'orders' } %}
+
+{% block title %}{{ 'tmonier_company_accounts.ui.company_order'|trans({'%number%': order.number}) }} | {{ parent() }}{% endblock %}

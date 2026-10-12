@@ -1,0 +1,14 @@
+imports:
+    - { resource: "@TmonierSyliusCompanyAccountsPlugin/config/config.yaml" }
+    - { resource: "dbal_savepoints.php" }
+
+# Demo company (dev and test databases): admin, buyer and approver of Acme Industries
+# (admin@acme-industries.example.com / sylius...), orders of the admin and the buyer.
+sylius_fixtures:
+    suites:
+        default:
+            fixtures:
+                tmonier_company_accounts:
+                    priority: -100
+                    options:
+                        orders_per_member: 2

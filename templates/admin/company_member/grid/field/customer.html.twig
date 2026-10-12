@@ -1,0 +1,3 @@
+{% set customer = data.customer %}
+
+<a href="{{ path('sylius_admin_customer_show', {'id': customer.id}) }}">{{ customer.email }}</a>

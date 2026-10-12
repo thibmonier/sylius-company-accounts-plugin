@@ -1,0 +1,24 @@
+sylius_twig_hooks:
+    hooks:
+        # Company edit page: link to its members.
+        'tmonier_company_accounts_admin.company.update.content.header.title_block.actions':
+            members:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company/update/members_button.html.twig'
+                priority: 150
+
+        # Members sub-grid.
+        'tmonier_company_accounts_admin.company_member.index.content.header':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/index/breadcrumbs.html.twig'
+                priority: 100
+
+        'tmonier_company_accounts_admin.company_member.index.content.header.title_block':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/company_member/index/title.html.twig'
+                priority: 100
+
+        # Customer page: company and role.
+        'sylius_admin.customer.show.content.sections.general':
+            tmonier_company:
+                template: '@TmonierSyliusCompanyAccountsPlugin/admin/customer/show/company.html.twig'
+                priority: 450

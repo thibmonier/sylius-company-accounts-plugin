@@ -1,0 +1,71 @@
+sylius_grid:
+    grids:
+        tmonier_company_accounts_admin_company:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: "%tmonier_company_accounts.model.company.class%"
+                    repository:
+                        method: createListQueryBuilder
+            sorting:
+                name: asc
+            fields:
+                name:
+                    type: string
+                    label: sylius.ui.name
+                    sortable: ~
+                code:
+                    type: string
+                    label: sylius.ui.code
+                    sortable: ~
+                vatNumber:
+                    type: string
+                    label: tmonier_company_accounts.ui.vat_number
+                registrationNumber:
+                    type: string
+                    label: tmonier_company_accounts.ui.registration_number
+                defaultCustomerGroup:
+                    type: twig
+                    label: tmonier_company_accounts.ui.default_customer_group
+                    path: .
+                    options:
+                        template: "@TmonierSyliusCompanyAccountsPlugin/admin/company/grid/field/customer_group.html.twig"
+                members:
+                    type: twig
+                    label: tmonier_company_accounts.ui.members
+                    path: .
+                    options:
+                        template: "@TmonierSyliusCompanyAccountsPlugin/admin/company/grid/field/members.html.twig"
+                enabled:
+                    type: twig
+                    label: sylius.ui.enabled
+                    sortable: ~
+                    options:
+                        template: "@SyliusAdmin/shared/grid/field/boolean.html.twig"
+            filters:
+                search:
+                    type: string
+                    label: sylius.ui.search
+                    options:
+                        fields: [name, code, vatNumber, registrationNumber]
+                enabled:
+                    type: boolean
+                    label: sylius.ui.enabled
+            actions:
+                main:
+                    create:
+                        type: create
+                item:
+                    members:
+                        type: show
+                        label: tmonier_company_accounts.ui.members
+                        icon: tabler:users
+                        options:
+                            link:
+                                route: tmonier_company_accounts_admin_company_member_index
+                                parameters:
+                                    companyId: resource.id
+                    update:
+                        type: update
+                    delete:
+                        type: delete

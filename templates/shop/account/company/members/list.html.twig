@@ -1,0 +1,51 @@
+{% set company = hookable_metadata.context.company %}
+{% set viewer = hookable_metadata.context.member %}
+{% set can_manage = is_granted('COMPANY_MANAGE_MEMBERS', company) %}
+
+{% include '@SyliusShop/shared/flashes.html.twig' %}
+
+<div class="table-responsive">
+    <table class="table align-middle" {{ sylius_test_html_attribute('tmonier-company-members') }}>
+        <thead>
+            <tr>
+                <th>{{ 'sylius.ui.name'|trans }}</th>
+                <th>{{ 'tmonier_company_accounts.ui.role'|trans }}</th>
+                <th>{{ 'sylius.ui.enabled'|trans }}</th>
+                {% if can_manage %}<th></th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in hookable_metadata.context.members %}
+                {% set is_me = member.id == viewer.id %}
+                <tr {{ sylius_test_html_attribute('tmonier-company-member', member.id) }}>
+                    <td>
+                        {{ member.customer.fullName|default('-') }}
+                        {% if is_me %}<span class="badge text-bg-light">{{ 'tmonier_company_accounts.ui.you'|trans }}</span>{% endif %}
+                    </td>
+                    {% if can_manage and not is_me %}
+                        <td colspan="3">
+                            <form method="post" action="{{ path('tmonier_company_accounts_shop_company_member_update', {'id': member.id}) }}" class="d-flex flex-wrap align-items-center gap-3" {{ sylius_test_html_attribute('tmonier-company-member-form', member.id) }}>
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('tmonier_company_member_' ~ member.id) }}">
+                                <select name="role" class="form-select form-select-sm w-auto" aria-label="{{ 'tmonier_company_accounts.ui.role'|trans }}">
+                                    {% for role in hookable_metadata.context.roles %}
+                                        <option value="{{ role }}" {{ role == member.role ? 'selected' }}>{{ ('tmonier_company_accounts.role.' ~ role)|trans }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="checkbox" name="enabled" value="1" id="tmonier-member-enabled-{{ member.id }}" {{ member.enabled ? 'checked' }}>
+                                    <label class="form-check-label" for="tmonier-member-enabled-{{ member.id }}">{{ 'sylius.ui.enabled'|trans }}</label>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-auto">{{ 'sylius.ui.save'|trans }}</button>
+                            </form>
+                        </td>
+                    {% else %}
+                        <td>{{ ('tmonier_company_accounts.role.' ~ member.role)|trans }}</td>
+                        <td>{{ member.enabled ? 'sylius.ui.yes'|trans : 'sylius.ui.no'|trans }}</td>
+                        {% if can_manage %}<td></td>{% endif %}
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="text-body-secondary small">{{ (can_manage ? 'tmonier_company_accounts.ui.members_admin_help' : 'tmonier_company_accounts.ui.members_help')|trans }}</p>

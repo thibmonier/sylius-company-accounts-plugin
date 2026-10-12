@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+
+<serializer xmlns="http://symfony.com/schema/dic/serializer-mapping"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/serializer-mapping https://symfony.com/schema/dic/serializer-mapping/serializer-mapping-1.0.xsd"
+>
+    <!-- Admin API only. Shop API resources are read models (src/Api/Shop) that never expose e-mails or phone numbers. -->
+    <class name="Tmonier\SyliusCompanyAccountsPlugin\Entity\Company">
+        <attribute name="id">
+            <group>tmonier_company_accounts:admin:company:index</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+        <attribute name="code">
+            <group>tmonier_company_accounts:admin:company:index</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+            <group>tmonier_company_accounts:admin:company:create</group>
+        </attribute>
+        <attribute name="name">
+            <group>tmonier_company_accounts:admin:company:index</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+            <group>tmonier_company_accounts:admin:company:create</group>
+            <group>tmonier_company_accounts:admin:company:update</group>
+        </attribute>
+        <attribute name="vatNumber">
+            <group>tmonier_company_accounts:admin:company:index</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+            <group>tmonier_company_accounts:admin:company:create</group>
+            <group>tmonier_company_accounts:admin:company:update</group>
+        </attribute>
+        <attribute name="registrationNumber">
+            <group>tmonier_company_accounts:admin:company:index</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+            <group>tmonier_company_accounts:admin:company:create</group>
+            <group>tmonier_company_accounts:admin:company:update</group>
+        </attribute>
+        <attribute name="defaultCustomerGroup">
+            <group>tmonier_company_accounts:admin:company:index</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+            <group>tmonier_company_accounts:admin:company:create</group>
+            <group>tmonier_company_accounts:admin:company:update</group>
+        </attribute>
+        <attribute name="enabled">
+            <group>tmonier_company_accounts:admin:company:index</group>
+            <group>tmonier_company_accounts:admin:company:show</group>
+            <group>tmonier_company_accounts:admin:company:create</group>
+            <group>tmonier_company_accounts:admin:company:update</group>
+        </attribute>
+        <attribute name="members">
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+        <attribute name="createdAt">
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+        <attribute name="updatedAt">
+            <group>tmonier_company_accounts:admin:company:show</group>
+        </attribute>
+    </class>
+</serializer>

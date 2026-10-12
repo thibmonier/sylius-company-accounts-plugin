@@ -1,0 +1,44 @@
+{% set context = hookable_metadata.context %}
+
+{% if context.orders is empty %}
+    <div class="alert alert-light" {{ sylius_test_html_attribute('tmonier-company-orders-empty') }}>{{ 'tmonier_company_accounts.ui.no_company_orders'|trans }}</div>
+{% else %}
+    <div class="table-responsive">
+        <table class="table align-middle" {{ sylius_test_html_attribute('tmonier-company-orders') }}>
+            <thead>
+                <tr>
+                    <th>{{ 'sylius.ui.number'|trans }}</th>
+                    <th>{{ 'sylius.ui.date'|trans }}</th>
+                    <th>{{ 'tmonier_company_accounts.ui.placed_by'|trans }}</th>
+                    <th>{{ 'sylius.ui.state'|trans }}</th>
+                    <th>{{ 'sylius.ui.payment_state'|trans }}</th>
+                    <th class="text-end">{{ 'sylius.ui.total'|trans }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in context.orders %}
+                    <tr {{ sylius_test_html_attribute('tmonier-company-order', order.number) }}>
+                        <td class="fw-semibold">#{{ order.number }}</td>
+                        <td>{{ order.checkoutCompletedAt ? order.checkoutCompletedAt|format_date : '' }}</td>
+                        <td>{{ order.customer.fullName|default('-') }}</td>
+                        <td>{{ ('sylius.ui.' ~ order.state)|trans }}</td>
+                        <td>{{ ('sylius.ui.' ~ order.paymentState)|trans }}</td>
+                        <td class="text-end">{{ order.total|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ path('tmonier_company_accounts_shop_company_order_show', {'number': order.number}) }}">{{ 'sylius.ui.show'|trans }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if context.pages > 1 %}
+        <nav aria-label="{{ 'tmonier_company_accounts.ui.company_orders'|trans }}">
+            <ul class="pagination">
+                {% for p in 1..context.pages %}
+                    <li class="page-item {{ p == context.current_page ? 'active' }}"><a class="page-link" href="{{ path('tmonier_company_accounts_shop_company_orders', {'page': p}) }}">{{ p }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endif %}
+<p class="text-body-secondary small">{{ 'tmonier_company_accounts.ui.company_orders_help'|trans }}</p>

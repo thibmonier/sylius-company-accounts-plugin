@@ -1,0 +1,15 @@
+tmonier_company_accounts:
+    company:
+        code:
+            unique: 'This code is already used by another company.'
+            not_blank: 'Please enter the company code.'
+            regex: 'The code can only contain letters, numbers, dashes and underscores.'
+        name:
+            not_blank: 'Please enter the company name.'
+    member:
+        customer_unique: 'This customer already belongs to a company.'
+        customer_not_blank: 'Please choose a customer.'
+        invalid_role: 'This role does not exist.'
+        not_allowed: 'Only an enabled admin of the company can change its members.'
+        self_change: 'You cannot change your own role or status.'
+        last_admin: 'The company must keep at least one enabled admin.'

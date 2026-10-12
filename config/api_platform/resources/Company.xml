@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resources
+    xmlns="https://api-platform.com/schema/metadata/resources-3.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://api-platform.com/schema/metadata/resources-3.0 https://api-platform.com/schema/metadata/resources-3.0.xsd"
+>
+    <!-- Admin CRUD of the companies: /api/v2/admin/companies (ROLE_API_ACCESS, as every admin endpoint). -->
+    <resource class="%tmonier_company_accounts.model.company.class%" shortName="Company">
+        <operations>
+            <operation name="tmonier_company_accounts_api_admin_company_get_collection" class="ApiPlatform\Metadata\GetCollection" uriTemplate="/admin/companies">
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company:index</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_get" class="ApiPlatform\Metadata\Get" uriTemplate="/admin/companies/{code}">
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company:show</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_post" class="ApiPlatform\Metadata\Post" uriTemplate="/admin/companies">
+                <denormalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company:create</value>
+                            </values>
+                        </value>
+                    </values>
+                </denormalizationContext>
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company:show</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+                <validationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>sylius</value>
+                            </values>
+                        </value>
+                    </values>
+                </validationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_put" class="ApiPlatform\Metadata\Put" uriTemplate="/admin/companies/{code}">
+                <denormalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company:update</value>
+                            </values>
+                        </value>
+                    </values>
+                </denormalizationContext>
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company:show</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+                <validationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>sylius</value>
+                            </values>
+                        </value>
+                    </values>
+                </validationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_delete" class="ApiPlatform\Metadata\Delete" uriTemplate="/admin/companies/{code}" />
+        </operations>
+    </resource>
+</resources>

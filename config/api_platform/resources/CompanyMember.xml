@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resources
+    xmlns="https://api-platform.com/schema/metadata/resources-3.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://api-platform.com/schema/metadata/resources-3.0 https://api-platform.com/schema/metadata/resources-3.0.xsd"
+>
+    <!-- Admin management of the members: attach (POST), change role or status (PUT), detach (DELETE). -->
+    <resource class="%tmonier_company_accounts.model.company_member.class%" shortName="CompanyMember">
+        <operations>
+            <operation name="tmonier_company_accounts_api_admin_company_member_get_collection" class="ApiPlatform\Metadata\GetCollection" uriTemplate="/admin/company-members">
+                <filters>
+                    <filter>tmonier_company_accounts.api.company_member_company_filter</filter>
+                </filters>
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company_member:index</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_member_get" class="ApiPlatform\Metadata\Get" uriTemplate="/admin/company-members/{id}">
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company_member:show</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_member_post" class="ApiPlatform\Metadata\Post" uriTemplate="/admin/company-members">
+                <denormalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company_member:create</value>
+                            </values>
+                        </value>
+                    </values>
+                </denormalizationContext>
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company_member:show</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+                <validationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>sylius</value>
+                            </values>
+                        </value>
+                    </values>
+                </validationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_member_put" class="ApiPlatform\Metadata\Put" uriTemplate="/admin/company-members/{id}">
+                <denormalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company_member:update</value>
+                            </values>
+                        </value>
+                    </values>
+                </denormalizationContext>
+                <normalizationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>tmonier_company_accounts:admin:company_member:show</value>
+                            </values>
+                        </value>
+                    </values>
+                </normalizationContext>
+                <validationContext>
+                    <values>
+                        <value name="groups">
+                            <values>
+                                <value>sylius</value>
+                            </values>
+                        </value>
+                    </values>
+                </validationContext>
+            </operation>
+
+            <operation name="tmonier_company_accounts_api_admin_company_member_delete" class="ApiPlatform\Metadata\Delete" uriTemplate="/admin/company-members/{id}" />
+        </operations>
+    </resource>
+</resources>

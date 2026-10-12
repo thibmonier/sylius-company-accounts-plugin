@@ -1,0 +1,15 @@
+tmonier_company_accounts:
+    company:
+        code:
+            unique: 'Este código ya lo utiliza otra empresa.'
+            not_blank: 'Introduzca el código de la empresa.'
+            regex: 'El código solo puede contener letras, números, guiones y guiones bajos.'
+        name:
+            not_blank: 'Introduzca el nombre de la empresa.'
+    member:
+        customer_unique: 'Este cliente ya pertenece a una empresa.'
+        customer_not_blank: 'Elija un cliente.'
+        invalid_role: 'Este rol no existe.'
+        not_allowed: 'Solo un administrador activo de la empresa puede modificar sus miembros.'
+        self_change: 'No puede cambiar su propio rol o estado.'
+        last_admin: 'La empresa debe conservar al menos un administrador activo.'

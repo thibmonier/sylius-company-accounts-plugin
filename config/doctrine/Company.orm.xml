@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping">
+
+    <mapped-superclass name="Tmonier\SyliusCompanyAccountsPlugin\Entity\Company" table="tmonier_company">
+        <id name="id" column="id" type="integer">
+            <generator strategy="AUTO" />
+        </id>
+
+        <field name="code" column="code" type="string" length="64" unique="true" />
+        <field name="name" column="name" type="string" length="255" />
+        <field name="vatNumber" column="vat_number" type="string" length="32" nullable="true" />
+        <field name="registrationNumber" column="registration_number" type="string" length="64" nullable="true" />
+        <field name="enabled" column="enabled" type="boolean" />
+        <field name="createdAt" column="created_at" type="datetime">
+            <gedmo:timestampable on="create" />
+        </field>
+        <field name="updatedAt" column="updated_at" type="datetime" nullable="true">
+            <gedmo:timestampable on="update" />
+        </field>
+
+        <many-to-one field="defaultCustomerGroup" target-entity="Sylius\Component\Customer\Model\CustomerGroupInterface">
+            <join-column name="default_customer_group_id" referenced-column-name="id" nullable="true" on-delete="SET NULL" />
+        </many-to-one>
+
+        <one-to-many field="members" target-entity="Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface" mapped-by="company" orphan-removal="true">
+            <cascade>
+                <cascade-persist />
+                <cascade-remove />
+            </cascade>
+        </one-to-many>
+    </mapped-superclass>
+
+</doctrine-mapping>

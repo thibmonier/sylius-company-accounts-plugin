@@ -1,0 +1,17 @@
+{% set company = hookable_metadata.context.company %}
+
+<div class="card border-0 bg-body-tertiary" {{ sylius_test_html_attribute('tmonier-company-details') }}>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">{{ 'sylius.ui.name'|trans }}</dt>
+            <dd class="col-sm-8">{{ company.name }}</dd>
+            <dt class="col-sm-4">{{ 'tmonier_company_accounts.ui.vat_number'|trans }}</dt>
+            <dd class="col-sm-8">{{ company.vatNumber|default('-') }}</dd>
+            <dt class="col-sm-4">{{ 'tmonier_company_accounts.ui.registration_number'|trans }}</dt>
+            <dd class="col-sm-8">{{ company.registrationNumber|default('-') }}</dd>
+            <dt class="col-sm-4">{{ 'tmonier_company_accounts.ui.members'|trans }}</dt>
+            <dd class="col-sm-8 mb-0" {{ sylius_test_html_attribute('tmonier-company-members-count') }}>{{ hookable_metadata.context.members_count }}</dd>
+        </dl>
+    </div>
+</div>
+<p class="text-body-secondary small mt-3">{{ 'tmonier_company_accounts.ui.company_details_help'|trans }}</p>

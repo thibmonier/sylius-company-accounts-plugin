@@ -1,0 +1,34 @@
+# Under /{_locale}/account: the Sylius shop access control requires a signed-in customer.
+tmonier_company_accounts_shop_company_show:
+    path: /account/company
+    methods: [GET]
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_account::showAction
+
+tmonier_company_accounts_shop_company_members:
+    path: /account/company/members
+    methods: [GET]
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_account::membersAction
+
+tmonier_company_accounts_shop_company_member_update:
+    path: /account/company/members/{id}
+    methods: [POST]
+    requirements:
+        id: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_account::updateMemberAction
+
+tmonier_company_accounts_shop_company_orders:
+    path: /account/company/orders
+    methods: [GET]
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_account::ordersAction
+
+tmonier_company_accounts_shop_company_order_show:
+    path: /account/company/orders/{number}
+    methods: [GET]
+    requirements:
+        number: '[A-Za-z0-9_-]{1,64}'
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_account::showOrderAction

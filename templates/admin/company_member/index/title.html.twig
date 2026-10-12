@@ -1,0 +1,7 @@
+{% import '@SyliusAdmin/shared/helper/header.html.twig' as header %}
+
+{% set company = hookable_metadata.context.resources.requestConfiguration.vars.company %}
+
+<div class="col-12 col-md" {{ sylius_test_html_attribute('tmonier-company-members-title') }}>
+    {{ header.h1('tmonier_company_accounts.ui.members_of'|trans({'%company%': company.name}), 'tabler:building', 'tmonier_company_accounts.ui.members_admin_subheader'|trans) }}
+</div>

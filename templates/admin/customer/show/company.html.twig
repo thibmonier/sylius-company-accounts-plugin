@@ -1,0 +1,13 @@
+{% set member = tmonier_company_member(hookable_metadata.context.customer) %}
+
+<div class="row">
+    <div class="col-12 col-md-4 fw-bold">{{ 'tmonier_company_accounts.ui.company'|trans }}</div>
+    <div class="col-12 col-md-8" {{ sylius_test_html_attribute('tmonier-customer-company') }}>
+        {% if member is not null %}
+            <a href="{{ path('tmonier_company_accounts_admin_company_member_index', {'companyId': member.company.id}) }}">{{ member.company.name }}</a>
+            ({{ ('tmonier_company_accounts.role.' ~ member.role)|trans }}{% if not member.enabled %}, {{ 'sylius.ui.disabled'|trans|lower }}{% endif %}{% if not member.company.enabled %}, {{ 'tmonier_company_accounts.ui.company_disabled'|trans }}{% endif %})
+        {% else %}
+            -
+        {% endif %}
+    </div>
+</div>

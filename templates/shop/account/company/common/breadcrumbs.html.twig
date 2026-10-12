@@ -1,0 +1,26 @@
+{% from '@SyliusShop/shared/breadcrumbs.html.twig' import breadcrumbs as breadcrumbs %}
+
+{% set context = hookable_metadata.context %}
+{% set items = [
+    { label: 'sylius.ui.home'|trans, path: path('sylius_shop_homepage') },
+    { label: 'sylius.ui.my_account'|trans, path: path('sylius_shop_account_dashboard') },
+] %}
+{% if context.page == 'show' %}
+    {% set items = items|merge([{ label: 'tmonier_company_accounts.ui.my_company'|trans, active: true }]) %}
+{% else %}
+    {% set items = items|merge([{ label: 'tmonier_company_accounts.ui.my_company'|trans, path: path('tmonier_company_accounts_shop_company_show') }]) %}
+    {% if context.page == 'members' %}
+        {% set items = items|merge([{ label: 'tmonier_company_accounts.ui.members'|trans, active: true }]) %}
+    {% elseif context.order|default(null) is not null %}
+        {% set items = items|merge([
+            { label: 'tmonier_company_accounts.ui.company_orders'|trans, path: path('tmonier_company_accounts_shop_company_orders') },
+            { label: '#' ~ context.order.number, active: true },
+        ]) %}
+    {% else %}
+        {% set items = items|merge([{ label: 'tmonier_company_accounts.ui.company_orders'|trans, active: true }]) %}
+    {% endif %}
+{% endif %}
+
+<div class="col-12">
+    {{ breadcrumbs(items) }}
+</div>

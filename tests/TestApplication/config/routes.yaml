@@ -1,0 +1,2 @@
+tmonier_sylius_company_accounts:
+    resource: "@TmonierSyliusCompanyAccountsPlugin/config/routes.yaml"

@@ -1,0 +1,70 @@
+{% set order = hookable_metadata.context.order %}
+
+<div class="card border-0 bg-body-tertiary mb-4" {{ sylius_test_html_attribute('tmonier-company-order-details') }}>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">{{ 'sylius.ui.number'|trans }}</dt>
+            <dd class="col-sm-8">#{{ order.number }}</dd>
+            <dt class="col-sm-4">{{ 'sylius.ui.date'|trans }}</dt>
+            <dd class="col-sm-8">{{ order.checkoutCompletedAt ? order.checkoutCompletedAt|format_datetime('medium', 'short') : '-' }}</dd>
+            <dt class="col-sm-4">{{ 'tmonier_company_accounts.ui.placed_by'|trans }}</dt>
+            <dd class="col-sm-8" {{ sylius_test_html_attribute('tmonier-company-order-placed-by') }}>{{ order.customer.fullName|default('-') }}</dd>
+            <dt class="col-sm-4">{{ 'sylius.ui.state'|trans }}</dt>
+            <dd class="col-sm-8">{{ ('sylius.ui.' ~ order.state)|trans }}</dd>
+            <dt class="col-sm-4">{{ 'sylius.ui.payment_state'|trans }}</dt>
+            <dd class="col-sm-8">{{ ('sylius.ui.' ~ order.paymentState)|trans }}</dd>
+            <dt class="col-sm-4">{{ 'sylius.ui.shipping_state'|trans }}</dt>
+            <dd class="col-sm-8 mb-0">{{ ('sylius.ui.' ~ order.shippingState)|trans }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table align-middle" {{ sylius_test_html_attribute('tmonier-company-order-items') }}>
+        <thead>
+            <tr>
+                <th>{{ 'sylius.ui.item'|trans }}</th>
+                <th class="text-end">{{ 'sylius.ui.unit_price'|trans }}</th>
+                <th class="text-end">{{ 'sylius.ui.quantity'|trans }}</th>
+                <th class="text-end">{{ 'sylius.ui.total'|trans }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ item.productName }}</div>
+                        {% if item.variantName %}<div class="small text-body-secondary">{{ item.variantName }}</div>{% endif %}
+                        {% if item.variant %}<div class="small text-body-secondary">{{ item.variant.code }}</div>{% endif %}
+                    </td>
+                    <td class="text-end">{{ item.unitPrice|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+                    <td class="text-end">{{ item.quantity }}</td>
+                    <td class="text-end">{{ item.total|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end">{{ 'sylius.ui.items_total'|trans }}</td>
+                <td class="text-end">{{ order.itemsTotal|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-end">{{ 'sylius.ui.shipping_total'|trans }}</td>
+                <td class="text-end">{{ order.shippingTotal|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-end">{{ 'sylius.ui.taxes_total'|trans }}</td>
+                <td class="text-end">{{ order.taxTotal|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-end">{{ 'sylius.ui.promotion_total'|trans }}</td>
+                <td class="text-end">{{ order.orderPromotionTotal|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+            </tr>
+            <tr class="fw-bold">
+                <td colspan="3" class="text-end">{{ 'sylius.ui.total'|trans }}</td>
+                <td class="text-end" {{ sylius_test_html_attribute('tmonier-company-order-total') }}>{{ order.total|sylius_format_money(order.currencyCode, order.localeCode) }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<p class="text-body-secondary small">{{ 'tmonier_company_accounts.ui.company_order_help'|trans }}</p>
