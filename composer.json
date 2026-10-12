@@ -34,13 +34,15 @@
         "symfony/runtime": "^6.4 || ^7.4 || ^8.0",
         "symfony/web-profiler-bundle": "^6.4 || ^7.4 || ^8.0",
         "symfony/webpack-encore-bundle": "^2.2",
+        "tmonier/sylius-admin-order-creation-plugin": "^1.0",
         "tmonier/sylius-order-hold-plugin": "^1.0"
     },
     "suggest": {
+        "tmonier/sylius-admin-order-creation-plugin": "Orders created by staff for an active member count for the member's company",
         "tmonier/sylius-order-hold-plugin": "Makes the company the account owner of its members' orders (shared trade credit with tmonier/sylius-trade-credit-plugin)"
     },
-    "repositories": [
-        {
+    "repositories": {
+        "order-hold": {
             "type": "path",
             "url": "../sylius-order-hold-plugin",
             "options": {
@@ -50,7 +52,7 @@
                 }
             }
         }
-    ],
+    },
     "config": {
         "sort-packages": true,
         "allow-plugins": {

@@ -1,4 +1,5 @@
 imports:
+    - { resource: "@TmonierSyliusAdminOrderCreationPlugin/config/config.yaml" }
     - { resource: "@TmonierSyliusCompanyAccountsPlugin/config/config.yaml" }
     - { resource: "dbal_savepoints.php" }
     - { resource: "services.php" }

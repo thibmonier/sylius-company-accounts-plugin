@@ -10,11 +10,15 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Tmonier\SyliusAdminOrderCreationPlugin\Entity\AdminOrderCreationInterface;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\CompanyOrderEligibilityCheckerInterface;
 use Tmonier\SyliusOrderHoldPlugin\AccountOwner\AccountOwnerResolverInterface;
 
 final class TmonierSyliusCompanyAccountsExtension extends AbstractResourceExtension implements PrependExtensionInterface
 {
     use PrependDoctrineMigrationsTrait;
+
+    private const ADMIN_ORDER_CREATION_PARAMETER = 'tmonier_company_accounts.admin_order_creation_bridge';
 
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -24,6 +28,10 @@ final class TmonierSyliusCompanyAccountsExtension extends AbstractResourceExtens
         $this->registerResources('tmonier_company_accounts', $config['driver'], $config['resources'], $container);
         $container->setParameter('tmonier_company_accounts.company_orders_roles', array_values(array_unique($config['company_orders_roles'])));
 
+        $container->registerForAutoconfiguration(CompanyOrderEligibilityCheckerInterface::class)
+            ->addTag('tmonier_company_accounts.company_order_eligibility_checker')
+        ;
+
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.php');
 
@@ -31,6 +39,12 @@ final class TmonierSyliusCompanyAccountsExtension extends AbstractResourceExtens
         // (shared trade credit...) only when tmonier/sylius-order-hold-plugin is installed.
         if (interface_exists(AccountOwnerResolverInterface::class)) {
             $loader->load('services/order_hold.php');
+        }
+
+        // Optional bridge: staff orders of tmonier/sylius-admin-order-creation-plugin count
+        // for the member's company (set at prepend time, when the other extensions are known).
+        if (true === ($container->hasParameter(self::ADMIN_ORDER_CREATION_PARAMETER) ? $container->getParameter(self::ADMIN_ORDER_CREATION_PARAMETER) : false)) {
+            $loader->load('services/admin_order_creation.php');
         }
     }
 
@@ -47,6 +61,11 @@ final class TmonierSyliusCompanyAccountsExtension extends AbstractResourceExtens
         foreach ($config['resources'] as $name => $resource) {
             $container->setParameter(sprintf('tmonier_company_accounts.model.%s.class', $name), $resource['classes']['model']);
         }
+
+        $container->setParameter(
+            self::ADMIN_ORDER_CREATION_PARAMETER,
+            $container->hasExtension('tmonier_sylius_admin_order_creation') && interface_exists(AdminOrderCreationInterface::class),
+        );
 
         $container->prependExtensionConfig('doctrine', [
             'orm' => [

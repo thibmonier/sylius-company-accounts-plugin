@@ -1,2 +1,6 @@
 tmonier_sylius_company_accounts:
     resource: "@TmonierSyliusCompanyAccountsPlugin/config/routes.yaml"
+
+# Staff orders on behalf of members (company orders through the admin order creation bridge).
+tmonier_sylius_admin_order_creation:
+    resource: "@TmonierSyliusAdminOrderCreationPlugin/config/routes.yaml"

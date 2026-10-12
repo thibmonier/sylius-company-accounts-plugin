@@ -51,6 +51,20 @@ final class CompanyOrderRecordingTest extends KernelTestCase
         self::assertNull($this->repository()->findOneByOrder($this->catalog()->placedOrder($this->customerOf($activeMember), asGuest: true)), 'guest checkout with the e-mail of a member');
     }
 
+    public function testAnOrderCreatedByStaffForAnActiveMemberIsACompanyOrder(): void
+    {
+        $company = $this->catalog()->company();
+        $member = $this->catalog()->member($company);
+        $disabled = $this->catalog()->member($company, null, CompanyMemberInterface::ROLE_BUYER, false);
+
+        $order = $this->catalog()->placedOrder($this->customerOf($member), byStaff: true);
+
+        self::assertTrue($order->isCreatedByGuest(), 'Staff orders are not placed by the signed-in customer.');
+        self::assertSame($company->getId(), $this->repository()->findOneByOrder($order)?->getCompany()?->getId());
+        self::assertNull($this->repository()->findOneByOrder($this->catalog()->placedOrder($this->customerOf($disabled), byStaff: true)), 'disabled member');
+        self::assertNull($this->repository()->findOneByOrder($this->catalog()->placedOrder($this->catalog()->customer('alone'), byStaff: true)), 'no company');
+    }
+
     public function testTheLinkSurvivesTheMemberLeavingAndPersonalOrdersStayPersonal(): void
     {
         $company = $this->catalog()->company();

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Tmonier\SyliusAdminOrderCreationPlugin\DependencyInjection\TmonierSyliusAdminOrderCreationExtension;
 use Tmonier\SyliusCompanyAccountsPlugin\DependencyInjection\Configuration;
 use Tmonier\SyliusCompanyAccountsPlugin\DependencyInjection\TmonierSyliusCompanyAccountsExtension;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\Company;
@@ -45,5 +46,30 @@ final class ConfigurationTest extends TestCase
         self::assertSame('tmonier_order_hold.resolver.account_owner', $decorated[0]);
         // Ignored when the order-hold bundle is installed but not enabled.
         self::assertSame(\Symfony\Component\DependencyInjection\ContainerInterface::IGNORE_ON_INVALID_REFERENCE, $decorated[3] ?? null);
+    }
+
+    public function testStaffOrdersCountForTheCompanyOnlyWithTheAdminOrderCreationBundle(): void
+    {
+        $id = 'tmonier_company_accounts.company_order_eligibility_checker.staff_order';
+
+        self::assertFalse($this->loadedContainer(false)->hasDefinition($id));
+
+        $definition = $this->loadedContainer(true)->getDefinition($id);
+        self::assertArrayHasKey('tmonier_company_accounts.company_order_eligibility_checker', $definition->getTags());
+    }
+
+    private function loadedContainer(bool $withAdminOrderCreation): ContainerBuilder
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.debug', false);
+        if ($withAdminOrderCreation) {
+            $container->registerExtension(new TmonierSyliusAdminOrderCreationExtension());
+        }
+        $extension = new TmonierSyliusCompanyAccountsExtension();
+        $container->registerExtension($extension);
+        $extension->prepend($container);
+        $extension->load([], $container);
+
+        return $container;
     }
 }

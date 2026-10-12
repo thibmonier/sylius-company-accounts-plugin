@@ -20,6 +20,7 @@ return static function (ContainerConfigurator $container): void {
             service('tmonier_company_accounts.repository.company_member'),
             service('tmonier_company_accounts.repository.company_order'),
             service('doctrine.orm.entity_manager'),
+            service('tmonier_company_accounts.company_order_eligibility_checker'),
         ])
     ;
 };

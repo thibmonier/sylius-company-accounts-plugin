@@ -9,13 +9,14 @@ use Sylius\Component\Core\Model\OrderInterface;
 use Sylius\Component\Core\OrderCheckoutStates;
 use Sylius\Resource\Factory\FactoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyOrderInterface;
-use Tmonier\SyliusCompanyAccountsPlugin\Member\CompanyOrderEligibility;
+use Tmonier\SyliusCompanyAccountsPlugin\Member\CompanyOrderEligibilityCheckerInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyOrderRepositoryInterface;
 
 /**
  * Records the company of an order in the flush that completes its checkout (shop, API, admin
- * tools or fixtures alike), when it is placed by an active member signed in to their account.
+ * tools or fixtures alike), when an active member places it (CompanyOrderEligibilityCheckerInterface:
+ * from their account, or by staff on their behalf with tmonier/sylius-admin-order-creation-plugin).
  */
 final class CompanyOrderListener
 {
@@ -24,6 +25,7 @@ final class CompanyOrderListener
         private readonly CompanyMemberRepositoryInterface $memberRepository,
         private readonly CompanyOrderRepositoryInterface $companyOrderRepository,
         private readonly FactoryInterface $companyOrderFactory,
+        private readonly CompanyOrderEligibilityCheckerInterface $eligibilityChecker,
     ) {
     }
 
@@ -50,7 +52,7 @@ final class CompanyOrderListener
 
         foreach ($orders as $order) {
             $customer = $order->getCustomer();
-            if (!CompanyOrderEligibility::isPlacedByAccountHolder($order) || null === $customer) {
+            if (null === $customer || !$this->eligibilityChecker->isEligible($order)) {
                 continue;
             }
             $member = $this->memberRepository->findOneByCustomer($customer);

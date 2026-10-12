@@ -11,6 +11,7 @@ use Sylius\Component\Addressing\Model\CountryInterface;
 use Sylius\Component\Addressing\Model\ZoneInterface;
 use Sylius\Component\Addressing\Model\ZoneMemberInterface;
 use Sylius\Component\Core\Factory\PaymentMethodFactoryInterface;
+use Sylius\Component\Locale\Model\LocaleInterface;
 use Sylius\Component\Core\Model\AddressInterface;
 use Sylius\Component\Core\Model\ChannelInterface;
 use Sylius\Component\Core\Model\ChannelPricingInterface;
@@ -29,6 +30,7 @@ use Sylius\Component\Order\Modifier\OrderItemQuantityModifierInterface;
 use Sylius\Component\Order\Modifier\OrderModifierInterface;
 use Sylius\Component\Product\Factory\ProductFactoryInterface;
 use Sylius\Resource\Factory\FactoryInterface;
+use Tmonier\SyliusAdminOrderCreationPlugin\Entity\AdminOrderCreationInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Factory\CompanyMemberFactoryInterface;
@@ -42,6 +44,9 @@ use Webmozart\Assert\Assert;
 final class TestCatalog
 {
     public readonly string $suffix;
+
+    /** Unique part of generated e-mails and codes within a test. */
+    private int $sequence = 0;
 
     private ?ShippingMethodInterface $shippingMethod = null;
 
@@ -61,6 +66,23 @@ final class TestCatalog
         Assert::isInstanceOf($channel, ChannelInterface::class);
 
         return $channel;
+    }
+
+    /** Makes a locale available in the channel (created if needed). */
+    public function channelLocale(string $code): void
+    {
+        $channel = $this->channel();
+        $locale = $this->entityManager()->getRepository(LocaleInterface::class)->findOneBy(['code' => $code]);
+        if (null === $locale) {
+            /** @var FactoryInterface<LocaleInterface> $factory */
+            $factory = $this->container->get('sylius.factory.locale');
+            $locale = $factory->createNew();
+            $locale->setCode($code);
+            $this->entityManager()->persist($locale);
+        }
+        Assert::isInstanceOf($locale, LocaleInterface::class);
+        $channel->addLocale($locale);
+        $this->entityManager()->flush();
     }
 
     public function localeCode(): string
@@ -95,17 +117,25 @@ final class TestCatalog
 
     public function company(string $name = 'Acme', bool $enabled = true, ?CustomerGroupInterface $group = null): CompanyInterface
     {
+        $company = $this->companyDraft($name, $enabled, $group);
+        $this->entityManager()->persist($company);
+        $this->entityManager()->flush();
+
+        return $company;
+    }
+
+    /** A company not persisted yet. */
+    public function companyDraft(string $name = 'Acme', bool $enabled = true, ?CustomerGroupInterface $group = null): CompanyInterface
+    {
         /** @var FactoryInterface<CompanyInterface> $factory */
         $factory = $this->container->get('tmonier_company_accounts.factory.company');
         $company = $factory->createNew();
-        $company->setCode(strtoupper(sprintf('%s_%s', $name, $this->suffix)) . random_int(10, 99));
+        $company->setCode(strtoupper(sprintf('%s_%s_%d', $name, $this->suffix, $this->next())));
         $company->setName($name . ' ' . $this->suffix);
         $company->setVatNumber('FR40123456824');
         $company->setRegistrationNumber('123 456 824');
         $company->setEnabled($enabled);
         $company->setDefaultCustomerGroup($group);
-        $this->entityManager()->persist($company);
-        $this->entityManager()->flush();
 
         return $company;
     }
@@ -114,7 +144,7 @@ final class TestCatalog
     {
         /** @var CompanyMemberFactoryInterface $factory */
         $factory = $this->container->get('tmonier_company_accounts.factory.company_member');
-        $member = $factory->createForCustomer($company, $customer ?? $this->customer($role . '-' . random_int(100, 999)), $role);
+        $member = $factory->createForCustomer($company, $customer ?? $this->customer($role . '-' . $this->next()), $role);
         $member->setEnabled($enabled);
         $this->entityManager()->persist($member);
         $this->entityManager()->flush();
@@ -127,7 +157,7 @@ final class TestCatalog
         /** @var FactoryInterface<CustomerGroupInterface> $factory */
         $factory = $this->container->get('sylius.factory.customer_group');
         $group = $factory->createNew();
-        $group->setCode(sprintf('%s_%s_%d', strtolower($name), $this->suffix, random_int(10, 99)));
+        $group->setCode(sprintf('%s_%s_%d', strtolower($name), $this->suffix, $this->next()));
         $group->setName($name);
         $this->entityManager()->persist($group);
         $this->entityManager()->flush();
@@ -138,9 +168,11 @@ final class TestCatalog
     /**
      * An order placed through the checkout state machine (completed in the last flush). Signed-in
      * customers get setCustomerWithAuthorization(), as the shop does; `$asGuest` places it as a
-     * guest with the e-mail of the customer.
+     * guest with the e-mail of the customer. `$byStaff` creates it as
+     * tmonier/sylius-admin-order-creation-plugin does (customer set without authorization,
+     * AdminOrderCreation marker).
      */
-    public function placedOrder(CustomerInterface $customer, bool $asGuest = false, string $checkoutState = 'completed'): OrderInterface
+    public function placedOrder(CustomerInterface $customer, bool $asGuest = false, string $checkoutState = 'completed', bool $byStaff = false): OrderInterface
     {
         $channel = $this->channel();
         /** @var FactoryInterface<OrderInterface> $orderFactory */
@@ -149,7 +181,7 @@ final class TestCatalog
         $order->setChannel($channel);
         $order->setLocaleCode($this->localeCode());
         $order->setCurrencyCode((string) $channel->getBaseCurrency()?->getCode());
-        if ($asGuest || null === $customer->getUser()) {
+        if ($asGuest || $byStaff || null === $customer->getUser()) {
             $order->setCustomer($customer);
         } else {
             $order->setCustomerWithAuthorization($customer);
@@ -170,6 +202,13 @@ final class TestCatalog
         $order->setShippingAddress($this->address());
         $order->setBillingAddress($this->address());
         $this->entityManager()->persist($order);
+        if ($byStaff) {
+            /** @var FactoryInterface<AdminOrderCreationInterface> $creationFactory */
+            $creationFactory = $this->container->get('tmonier_admin_order.factory.admin_order_creation');
+            $creation = $creationFactory->createNew();
+            $creation->setOrder($order);
+            $this->entityManager()->persist($creation);
+        }
 
         $this->shippingMethod();
         $paymentMethod = $this->paymentMethod();
@@ -226,6 +265,11 @@ final class TestCatalog
         $stateMachine = $this->container->get('sylius_abstraction.state_machine');
         Assert::true($stateMachine->can($order, OrderCheckoutTransitions::GRAPH, $transition), sprintf('Checkout transition "%s" from "%s"', $transition, (string) $order->getCheckoutState()));
         $stateMachine->apply($order, OrderCheckoutTransitions::GRAPH, $transition);
+    }
+
+    private function next(): int
+    {
+        return ++$this->sequence;
     }
 
     private function address(): AddressInterface
