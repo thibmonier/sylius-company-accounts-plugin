@@ -81,3 +81,16 @@ sylius_twig_hooks:
             section:
                 template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/order/details.html.twig'
                 priority: -10
+
+        # Tabs of the "My company" pages (extension point, see README "Extending"): one <li> per
+        # hookable; other plugins add theirs with a lower priority (after "Company orders").
+        'tmonier_company_accounts.shop.account.company.tabs':
+            overview:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/tabs/overview.html.twig'
+                priority: 300
+            members:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/tabs/members.html.twig'
+                priority: 200
+            orders:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/tabs/orders.html.twig'
+                priority: 100

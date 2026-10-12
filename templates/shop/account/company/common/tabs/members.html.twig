@@ -1,0 +1,4 @@
+{% set context = hookable_metadata.context %}
+<li class="nav-item">
+    <a class="nav-link {{ context.active_tab == 'members' ? 'active' }}" href="{{ path('tmonier_company_accounts_shop_company_members') }}" {% if context.active_tab == 'members' %}aria-current="page"{% endif %}>{{ 'tmonier_company_accounts.ui.members'|trans }}</a>
+</li>

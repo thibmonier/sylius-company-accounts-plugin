@@ -14,3 +14,15 @@ sylius_fixtures:
                     priority: -100
                     options:
                         orders_per_member: 2
+
+# Test application only: a tab added to "My company" by another plugin (extension point test).
+twig:
+    paths:
+        '%kernel.project_dir%/../../../tests/TestApplication/templates': ~
+
+sylius_twig_hooks:
+    hooks:
+        'tmonier_company_accounts.shop.account.company.tabs':
+            test_extra:
+                template: 'company_tabs/extra.html.twig'
+                priority: 0

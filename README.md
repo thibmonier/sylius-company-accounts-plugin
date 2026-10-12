@@ -200,6 +200,7 @@ for a disabled membership or company, or a missing permission.
 |---|---|
 | `tmonier_company_accounts_shop.account.company.{show,members,orders,order}.index.content.main` → `section` | Body of each company page |
 | `tmonier_company_accounts_shop.account.company.*.index.content.main.header` → `title`, `navigation` | Company name, role, tabs |
+| `tmonier_company_accounts.shop.account.company.tabs` → `overview`, `members`, `orders` | One tab each (see [Extending](#extending)) |
 | `sylius_shop.account.dashboard.index.content.main` → `tmonier_company` | Company card of the dashboard |
 | `sylius_admin.customer.show.content.sections.general` → `tmonier_company` | Company row of the admin customer page |
 | `tmonier_company_accounts_admin.company.update.content.header.title_block.actions` → `members` | Members button of the company form |
@@ -210,6 +211,47 @@ Services: `CurrentMemberResolverInterface`, `MemberChangeGuard` (rules) and `Mem
 (rules and write under a lock), `CompanyOrderEligibilityCheckerInterface` (tagged), the voters
 (`tmonier_company_accounts.voter.company`, `.voter.order`) and the member factory
 (`CompanyMemberFactoryInterface::createForCustomer()`).
+
+## Extending
+
+### Tabs of "My company"
+
+The tab bar of the company pages is the Twig hook
+`tmonier_company_accounts.shop.account.company.tabs` (1.1+). Each tab is a hookable rendering
+one `<li class="nav-item">`; the built-in ones are `overview` (priority 300), `members` (200)
+and `orders` (100, admins and approvers only). Add yours after them:
+
+```yaml
+sylius_twig_hooks:
+    hooks:
+        'tmonier_company_accounts.shop.account.company.tabs':
+            app_budget:
+                template: '@App/company/budget_tab.html.twig'
+                priority: 0
+```
+
+```twig
+{# hookable_metadata.context: company, member, active_tab #}
+{% set context = hookable_metadata.context %}
+{% if is_granted('COMPANY_VIEW', context.company) %}
+    <li class="nav-item">
+        <a class="nav-link {{ context.active_tab == 'budget' ? 'active' }}" href="{{ path('app_company_budget') }}"
+           {% if context.active_tab == 'budget' %}aria-current="page"{% endif %}>Budget</a>
+    </li>
+{% endif %}
+```
+
+| Context | |
+|---|---|
+| `company` | `CompanyInterface` of the signed-in member |
+| `member` | their `CompanyMemberInterface` |
+| `active_tab` | `overview`, `members`, `orders` on this plugin's pages; the key your page passes |
+
+To show the same tab bar on a page of your plugin (extending
+`@SyliusShop/account/common/index.html.twig`), add the template
+`@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/navigation.html.twig` to your
+page header hook and pass `company`, `member` and `active_tab` (your tab key) in the page
+context.
 
 ## Limitations
 

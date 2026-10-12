@@ -1,0 +1,5 @@
+{# Test application only: a tab added by "another plugin" through the tabs hook. #}
+{% set context = hookable_metadata.context %}
+<li class="nav-item" {{ sylius_test_html_attribute('test-extra-tab', context.active_tab|default('none')) }}>
+    <a class="nav-link" href="#extra">Extra {{ context.company.name }} ({{ context.member.role }})</a>
+</li>
