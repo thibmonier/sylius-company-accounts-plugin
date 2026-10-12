@@ -30,6 +30,18 @@ the company admins in the shop.
 Also included: translations in English, French, German, Spanish, Italian, Dutch and Polish; a
 demo fixture; MySQL, MariaDB and PostgreSQL support (Schema API migration).
 
+## Screenshots
+
+![Company members in the customer account, with their roles](docs/images/shop-company-members.jpg)
+
+![Company orders in the customer account](docs/images/shop-company-orders.jpg)
+
+![Members of a company in the back office](docs/images/admin-company-members.jpg)
+
+![Company form in the back office](docs/images/admin-company-edit.jpg)
+
+![Member form in the back office](docs/images/admin-company-member-edit.jpg)
+
 ## Requirements
 
 | | Version |
