@@ -10,7 +10,7 @@ use Sylius\Component\Customer\Model\CustomerGroupInterface;
 use Sylius\Resource\Model\TimestampableTrait;
 use Sylius\Resource\Model\ToggleableTrait;
 
-class Company implements CompanyInterface
+class Company implements CompanyInterface, \Stringable
 {
     use TimestampableTrait;
     use ToggleableTrait;
@@ -68,7 +68,7 @@ class Company implements CompanyInterface
 
     public function setVatNumber(?string $vatNumber): void
     {
-        $this->vatNumber = self::normalize($vatNumber);
+        $this->vatNumber = $this->normalize($vatNumber);
     }
 
     public function getRegistrationNumber(): ?string
@@ -78,7 +78,7 @@ class Company implements CompanyInterface
 
     public function setRegistrationNumber(?string $registrationNumber): void
     {
-        $this->registrationNumber = self::normalize($registrationNumber);
+        $this->registrationNumber = $this->normalize($registrationNumber);
     }
 
     public function getDefaultCustomerGroup(): ?CustomerGroupInterface
@@ -129,7 +129,7 @@ class Company implements CompanyInterface
         return (string) ($this->name ?? $this->code);
     }
 
-    private static function normalize(?string $value): ?string
+    private function normalize(?string $value): ?string
     {
         $value = null === $value ? null : trim($value);
 

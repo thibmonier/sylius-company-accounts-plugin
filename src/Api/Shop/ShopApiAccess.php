@@ -12,11 +12,11 @@ use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\CurrentMemberResolverInterface;
 
 /** Same rules as the account pages: no membership 404, permission refused 403. */
-final class ShopApiAccess
+final readonly class ShopApiAccess
 {
     public function __construct(
-        private readonly CurrentMemberResolverInterface $currentMemberResolver,
-        private readonly AuthorizationCheckerInterface $authorizationChecker,
+        private CurrentMemberResolverInterface $currentMemberResolver,
+        private AuthorizationCheckerInterface $authorizationChecker,
     ) {
     }
 
@@ -25,7 +25,7 @@ final class ShopApiAccess
     {
         $member = $this->currentMemberResolver->getMember();
         $company = $member?->getCompany();
-        if (null === $member || null === $company) {
+        if (!$member instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface || !$company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface) {
             throw new NotFoundHttpException('No company.');
         }
         if (!$this->authorizationChecker->isGranted($attribute, $company)) {

@@ -36,7 +36,7 @@ final class CustomerAutocompleteType extends AbstractType
                 ->andWhere('membership.id IS NULL')
                 ->orderBy('customer.email', 'ASC'),
             'searchable_fields' => ['email', 'firstName', 'lastName'],
-            'choice_label' => static fn (CustomerInterface $customer): string => self::label($customer),
+            'choice_label' => self::label(...),
             'security' => 'ROLE_ADMINISTRATION_ACCESS',
             'max_results' => 20,
         ]);

@@ -16,9 +16,9 @@ use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterf
  * customer page deletes the shop user, after which the person can no longer use the company
  * area and must not stay listed (or counted as an admin) among their colleagues.
  */
-final class CustomerRemovalListener
+final readonly class CustomerRemovalListener
 {
-    public function __construct(private readonly CompanyMemberRepositoryInterface $memberRepository)
+    public function __construct(private CompanyMemberRepositoryInterface $memberRepository)
     {
     }
 
@@ -35,7 +35,7 @@ final class CustomerRemovalListener
         }
 
         $member = $this->memberRepository->findOneByCustomer($customer);
-        if (null !== $member && !$args->getObjectManager()->getUnitOfWork()->isScheduledForDelete($member)) {
+        if ($member instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface && !$args->getObjectManager()->getUnitOfWork()->isScheduledForDelete($member)) {
             $member->getCompany()?->removeMember($member);
             $args->getObjectManager()->remove($member);
         }

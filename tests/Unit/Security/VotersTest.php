@@ -30,8 +30,8 @@ final class VotersTest extends TestCase
 
     public function testCompanyPermissionsByRoleAndStatus(): void
     {
-        $company = self::company(1);
-        $other = self::company(2);
+        $company = $this->company(1);
+        $other = $this->company(2);
         $voter = $this->companyVoter();
 
         foreach ([
@@ -43,7 +43,7 @@ final class VotersTest extends TestCase
             ['admin', true, false, [false, false, false]],
         ] as [$role, $memberEnabled, $companyEnabled, $expected]) {
             $company->setEnabled($companyEnabled);
-            $this->current = self::member($company, $role, $memberEnabled);
+            $this->current = $this->member($company, $role, $memberEnabled);
             $label = sprintf('%s, member %s, company %s', $role, var_export($memberEnabled, true), var_export($companyEnabled, true));
             self::assertSame($expected, [
                 $this->grants($voter, CompanyPermissions::COMPANY_VIEW, $company),
@@ -61,8 +61,8 @@ final class VotersTest extends TestCase
 
     public function testTheCompanyOrdersRolesAreConfigurable(): void
     {
-        $company = self::company(1);
-        $this->current = self::member($company, 'buyer');
+        $company = $this->company(1);
+        $this->current = $this->member($company, 'buyer');
 
         self::assertTrue($this->grants($this->companyVoter(['admin', 'buyer']), CompanyPermissions::ORDER_VIEW_COMPANY, $company));
         self::assertFalse($this->grants($this->companyVoter(['admin']), CompanyPermissions::ORDER_VIEW_COMPANY, $company));
@@ -70,28 +70,28 @@ final class VotersTest extends TestCase
 
     public function testOrderPermissions(): void
     {
-        $company = self::company(1);
-        $other = self::company(2);
-        $owner = self::customer(10);
-        $colleague = self::customer(11);
+        $company = $this->company(1);
+        $other = $this->company(2);
+        $owner = $this->customer(10);
+        $colleague = $this->customer(11);
         $companyOrder = new Order();
         $companyOrder->setCustomer($owner);
         $foreignOrder = new Order();
-        $foreignOrder->setCustomer(self::customer(12));
+        $foreignOrder->setCustomer($this->customer(12));
         $personalOrder = new Order();
         $personalOrder->setCustomer($colleague);
         $links = [spl_object_id($companyOrder) => $company, spl_object_id($foreignOrder) => $other];
         $voter = new OrderVoter($this->resolver(), $this->companyOrders($links), $this->companyVoter());
 
         $this->currentCustomer = $colleague;
-        $this->current = self::member($company, 'approver');
+        $this->current = $this->member($company, 'approver');
         self::assertTrue($this->grants($voter, CompanyPermissions::ORDER_VIEW_COMPANY, $companyOrder));
         self::assertFalse($this->grants($voter, CompanyPermissions::ORDER_VIEW_COMPANY, $foreignOrder));
         self::assertFalse($this->grants($voter, CompanyPermissions::ORDER_VIEW_COMPANY, $personalOrder), 'Not a company order.');
         self::assertFalse($this->grants($voter, CompanyPermissions::ORDER_VIEW_OWN, $companyOrder));
         self::assertTrue($this->grants($voter, CompanyPermissions::ORDER_VIEW_OWN, $personalOrder));
 
-        $this->current = self::member($company, 'buyer');
+        $this->current = $this->member($company, 'buyer');
         self::assertFalse($this->grants($voter, CompanyPermissions::ORDER_VIEW_COMPANY, $companyOrder));
 
         $this->currentCustomer = null;
@@ -158,7 +158,7 @@ final class VotersTest extends TestCase
         return $repository;
     }
 
-    private static function company(int $id): CompanyInterface
+    private function company(int $id): CompanyInterface
     {
         $company = new Company();
         (new \ReflectionProperty(Company::class, 'id'))->setValue($company, $id);
@@ -166,7 +166,7 @@ final class VotersTest extends TestCase
         return $company;
     }
 
-    private static function member(CompanyInterface $company, string $role, bool $enabled = true): CompanyMemberInterface
+    private function member(CompanyInterface $company, string $role, bool $enabled = true): CompanyMemberInterface
     {
         $member = new CompanyMember();
         $member->setRole($role);
@@ -176,7 +176,7 @@ final class VotersTest extends TestCase
         return $member;
     }
 
-    private static function customer(int $id): CustomerInterface
+    private function customer(int $id): CustomerInterface
     {
         $customer = new Customer();
         (new \ReflectionProperty(Customer::class, 'id'))->setValue($customer, $id);

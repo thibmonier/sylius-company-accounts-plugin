@@ -11,11 +11,11 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterface;
 
-final class CurrentMemberResolver implements CurrentMemberResolverInterface
+final readonly class CurrentMemberResolver implements CurrentMemberResolverInterface
 {
     public function __construct(
-        private readonly TokenStorageInterface $tokenStorage,
-        private readonly CompanyMemberRepositoryInterface $memberRepository,
+        private TokenStorageInterface $tokenStorage,
+        private CompanyMemberRepositoryInterface $memberRepository,
     ) {
     }
 
@@ -34,6 +34,6 @@ final class CurrentMemberResolver implements CurrentMemberResolverInterface
     {
         $customer = $this->getCustomer($token);
 
-        return null === $customer ? null : $this->memberRepository->findOneByCustomer($customer);
+        return $customer instanceof \Sylius\Component\Core\Model\CustomerInterface ? $this->memberRepository->findOneByCustomer($customer) : null;
     }
 }

@@ -37,11 +37,11 @@ final class OrderVoter extends Voter
             $customer = $this->currentMemberResolver->getCustomer($token);
             $owner = $subject->getCustomer();
 
-            return null !== $customer && null !== $customer->getId() && null !== $owner && $owner->getId() === $customer->getId();
+            return $customer instanceof \Sylius\Component\Core\Model\CustomerInterface && null !== $customer->getId() && null !== $owner && $owner->getId() === $customer->getId();
         }
 
         $company = $this->companyOrderRepository->findOneByOrder($subject)?->getCompany();
 
-        return null !== $company && self::ACCESS_GRANTED === $this->companyVoter->vote($token, $company, [CompanyPermissions::ORDER_VIEW_COMPANY]);
+        return $company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface && self::ACCESS_GRANTED === $this->companyVoter->vote($token, $company, [CompanyPermissions::ORDER_VIEW_COMPANY]);
     }
 }

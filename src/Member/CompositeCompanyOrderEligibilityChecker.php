@@ -6,10 +6,10 @@ namespace Tmonier\SyliusCompanyAccountsPlugin\Member;
 
 use Sylius\Component\Core\Model\OrderInterface;
 
-final class CompositeCompanyOrderEligibilityChecker implements CompanyOrderEligibilityCheckerInterface
+final readonly class CompositeCompanyOrderEligibilityChecker implements CompanyOrderEligibilityCheckerInterface
 {
     /** @param iterable<CompanyOrderEligibilityCheckerInterface> $checkers */
-    public function __construct(private readonly iterable $checkers)
+    public function __construct(private iterable $checkers)
     {
     }
 

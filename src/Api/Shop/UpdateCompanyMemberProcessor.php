@@ -18,14 +18,14 @@ use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterf
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
 
 /** @implements ProcessorInterface<UpdateCompanyMemberInput, CompanyMemberView> */
-final class UpdateCompanyMemberProcessor implements ProcessorInterface
+final readonly class UpdateCompanyMemberProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly ShopApiAccess $access,
-        private readonly CompanyMemberRepositoryInterface $memberRepository,
-        private readonly MemberUpdater $memberUpdater,
-        private readonly TranslatorInterface $translator,
-        private readonly LocaleContextInterface $localeContext,
+        private ShopApiAccess $access,
+        private CompanyMemberRepositoryInterface $memberRepository,
+        private MemberUpdater $memberUpdater,
+        private TranslatorInterface $translator,
+        private LocaleContextInterface $localeContext,
     ) {
     }
 
@@ -44,7 +44,7 @@ final class UpdateCompanyMemberProcessor implements ProcessorInterface
         [$actor, $company] = $this->access->membership(CompanyPermissions::COMPANY_VIEW);
         $id = $uriVariables['id'] ?? null;
         $target = is_numeric($id) ? $this->memberRepository->findOneByIdAndCompany((int) $id, $company) : null;
-        if (null === $target) {
+        if (!$target instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface) {
             throw new NotFoundHttpException('Member not found.');
         }
         if (!$this->access->isGranted(CompanyPermissions::COMPANY_MANAGE_MEMBERS, $company)) {

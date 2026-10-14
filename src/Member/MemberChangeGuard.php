@@ -30,7 +30,7 @@ final class MemberChangeGuard
     public function check(CompanyMemberInterface $actor, CompanyMemberInterface $target, string $role, bool $enabled, ?int $enabledAdmins = null): ?string
     {
         $company = $actor->getCompany();
-        if (!$actor->isActive() || !$actor->isAdmin() || null === $company || $target->getCompany() !== $company) {
+        if (!$actor->isActive() || !$actor->isAdmin() || !$company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface || $target->getCompany() !== $company) {
             return self::ERROR_NOT_ALLOWED;
         }
         if (!in_array($role, CompanyMemberInterface::ROLES, true)) {

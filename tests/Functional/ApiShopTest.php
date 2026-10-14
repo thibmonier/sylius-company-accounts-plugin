@@ -101,7 +101,7 @@ final class ApiShopTest extends WebTestCase
     {
         $s = new CompanyScenario($this->catalog());
         $path = '/api/v2/shop/company/members/' . $this->idOf($s->buyerA);
-        $patch = fn (?CompanyMemberInterface $as, array $body, string $target = '') => $this->client->request('PATCH', '' === $target ? $path : $target, server: $this->shopApiHeaders(null === $as ? null : CompanyScenario::customerOf($as), 'application/merge-patch+json'), content: json_encode($body, \JSON_THROW_ON_ERROR));
+        $patch = fn (?CompanyMemberInterface $as, array $body, string $target = ''): \Symfony\Component\DomCrawler\Crawler => $this->client->request('PATCH', '' === $target ? $path : $target, server: $this->shopApiHeaders($as instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface ? CompanyScenario::customerOf($as) : null, 'application/merge-patch+json'), content: json_encode($body, \JSON_THROW_ON_ERROR));
 
         $patch($s->adminA, ['role' => 'approver', 'enabled' => false]);
         self::assertResponseIsSuccessful();
@@ -149,7 +149,7 @@ final class ApiShopTest extends WebTestCase
         $detail = $this->json()['detail'] ?? null;
         self::assertIsString($detail);
         self::assertNotSame('You cannot change your own role or status.', $detail);
-        self::assertSame(self::translated('tmonier_company_accounts.member.self_change', 'fr_FR'), $detail);
+        self::assertSame($this->translated('tmonier_company_accounts.member.self_change', 'fr_FR'), $detail);
     }
 
     public function testCompanyOrdersAreReadOnlyViews(): void
@@ -191,7 +191,7 @@ final class ApiShopTest extends WebTestCase
         }
     }
 
-    private static function translated(string $key, string $locale): string
+    private function translated(string $key, string $locale): string
     {
         $translator = self::getContainer()->get('translator');
         self::assertInstanceOf(\Symfony\Contracts\Translation\TranslatorInterface::class, $translator);

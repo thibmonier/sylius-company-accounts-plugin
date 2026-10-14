@@ -28,24 +28,24 @@ use Tmonier\SyliusOrderHoldPlugin\AccountOwner\AccountOwnerResolverInterface;
  *   listeners): the company of its customer, when the order is eligible
  *   (CompanyOrderEligibilityCheckerInterface: never for guest orders).
  */
-final class CompanyAccountOwnerResolver implements AccountOwnerResolverInterface
+final readonly class CompanyAccountOwnerResolver implements AccountOwnerResolverInterface
 {
     public const TYPE_COMPANY = 'company';
 
     public function __construct(
-        private readonly AccountOwnerResolverInterface $decorated,
-        private readonly CompanyMemberRepositoryInterface $memberRepository,
-        private readonly CompanyOrderRepositoryInterface $companyOrderRepository,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly CompanyOrderEligibilityCheckerInterface $eligibilityChecker,
+        private AccountOwnerResolverInterface $decorated,
+        private CompanyMemberRepositoryInterface $memberRepository,
+        private CompanyOrderRepositoryInterface $companyOrderRepository,
+        private EntityManagerInterface $entityManager,
+        private CompanyOrderEligibilityCheckerInterface $eligibilityChecker,
     ) {
     }
 
     public function resolveForOrder(OrderInterface $order): ?AccountOwner
     {
         $company = $this->recordedCompany($order);
-        if (null !== $company) {
-            return self::owner($company);
+        if ($company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface) {
+            return $this->owner($company);
         }
 
         $customer = $order->getCustomer();
@@ -60,11 +60,11 @@ final class CompanyAccountOwnerResolver implements AccountOwnerResolverInterface
     {
         $member = $this->memberRepository->findOneByCustomer($customer);
         $company = $member?->getCompany();
-        if (null === $member || null === $company || !$member->isActive()) {
+        if (!$member instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface || !$company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface || !$member->isActive()) {
             return $this->decorated->resolveForCustomer($customer);
         }
 
-        return self::owner($company) ?? $this->decorated->resolveForCustomer($customer);
+        return $this->owner($company) ?? $this->decorated->resolveForCustomer($customer);
     }
 
     /** The link of the order: in the database, or persisted in the flush running now. */
@@ -102,7 +102,7 @@ final class CompanyAccountOwnerResolver implements AccountOwnerResolverInterface
         return ($original['checkoutState'] ?? OrderCheckoutStates::STATE_COMPLETED) === OrderCheckoutStates::STATE_COMPLETED;
     }
 
-    private static function owner(CompanyInterface $company): ?AccountOwner
+    private function owner(CompanyInterface $company): ?AccountOwner
     {
         $id = $company->getId();
 

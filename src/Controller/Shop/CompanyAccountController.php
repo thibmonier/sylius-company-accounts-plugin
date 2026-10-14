@@ -60,11 +60,11 @@ final class CompanyAccountController extends AbstractController
         ]);
     }
 
-    public function updateMemberAction(Request $request, int $id): Response
+    public function updateMemberAction(Request $request, int $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         [$member, $company] = $this->membership(CompanyPermissions::COMPANY_MANAGE_MEMBERS);
         $target = $this->memberRepository->findOneByIdAndCompany($id, $company);
-        if (null === $target) {
+        if (!$target instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface) {
             throw $this->createNotFoundException('Member not found.');
         }
         if (!$this->isCsrfTokenValid('tmonier_company_member_' . $id, (string) $request->request->get('_csrf_token'))) {
@@ -139,7 +139,7 @@ final class CompanyAccountController extends AbstractController
     {
         $member = $this->currentMemberResolver->getMember();
         $company = $member?->getCompany();
-        if (null === $member || null === $company) {
+        if (!$member instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface || !$company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface) {
             throw $this->createNotFoundException('No company.');
         }
         $this->denyAccessUnlessGranted($attribute, $company);

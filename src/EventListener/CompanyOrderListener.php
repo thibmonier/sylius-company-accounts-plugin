@@ -18,14 +18,14 @@ use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyOrderRepositoryInterfa
  * tools or fixtures alike), when an active member places it (CompanyOrderEligibilityCheckerInterface:
  * from their account, or by staff on their behalf with tmonier/sylius-admin-order-creation-plugin).
  */
-final class CompanyOrderListener
+final readonly class CompanyOrderListener
 {
     /** @param FactoryInterface<CompanyOrderInterface> $companyOrderFactory */
     public function __construct(
-        private readonly CompanyMemberRepositoryInterface $memberRepository,
-        private readonly CompanyOrderRepositoryInterface $companyOrderRepository,
-        private readonly FactoryInterface $companyOrderFactory,
-        private readonly CompanyOrderEligibilityCheckerInterface $eligibilityChecker,
+        private CompanyMemberRepositoryInterface $memberRepository,
+        private CompanyOrderRepositoryInterface $companyOrderRepository,
+        private FactoryInterface $companyOrderFactory,
+        private CompanyOrderEligibilityCheckerInterface $eligibilityChecker,
     ) {
     }
 
@@ -45,18 +45,18 @@ final class CompanyOrderListener
                 continue;
             }
             $change = $unitOfWork->getEntityChangeSet($entity)['checkoutState'] ?? null;
-            if (null !== $change && OrderCheckoutStates::STATE_COMPLETED === $change[1] && null === $this->companyOrderRepository->findOneByOrder($entity)) {
+            if (null !== $change && OrderCheckoutStates::STATE_COMPLETED === $change[1] && !$this->companyOrderRepository->findOneByOrder($entity) instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyOrderInterface) {
                 $orders[] = $entity;
             }
         }
 
         foreach ($orders as $order) {
             $customer = $order->getCustomer();
-            if (null === $customer || !$this->eligibilityChecker->isEligible($order)) {
+            if (!$customer instanceof \Sylius\Component\Customer\Model\CustomerInterface || !$this->eligibilityChecker->isEligible($order)) {
                 continue;
             }
             $member = $this->memberRepository->findOneByCustomer($customer);
-            if (null === $member || !$member->isActive()) {
+            if (!$member instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface || !$member->isActive()) {
                 continue;
             }
 

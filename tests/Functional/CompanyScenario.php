@@ -14,31 +14,31 @@ use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
  * Company A (admin, buyer, approver, a disabled member, an order of the buyer), company B
  * (admin with an order), disabled company C (admin), and a customer without company.
  */
-final class CompanyScenario
+final readonly class CompanyScenario
 {
-    public readonly CompanyInterface $companyA;
+    public CompanyInterface $companyA;
 
-    public readonly CompanyMemberInterface $adminA;
+    public CompanyMemberInterface $adminA;
 
-    public readonly CompanyMemberInterface $buyerA;
+    public CompanyMemberInterface $buyerA;
 
-    public readonly CompanyMemberInterface $approverA;
+    public CompanyMemberInterface $approverA;
 
-    public readonly CompanyMemberInterface $disabledA;
+    public CompanyMemberInterface $disabledA;
 
-    public readonly OrderInterface $orderA;
+    public OrderInterface $orderA;
 
-    public readonly CompanyInterface $companyB;
+    public CompanyInterface $companyB;
 
-    public readonly CompanyMemberInterface $adminB;
+    public CompanyMemberInterface $adminB;
 
-    public readonly OrderInterface $orderB;
+    public OrderInterface $orderB;
 
-    public readonly CompanyInterface $companyC;
+    public CompanyInterface $companyC;
 
-    public readonly CompanyMemberInterface $adminC;
+    public CompanyMemberInterface $adminC;
 
-    public readonly CustomerInterface $nonMember;
+    public CustomerInterface $nonMember;
 
     public function __construct(TestCatalog $catalog)
     {

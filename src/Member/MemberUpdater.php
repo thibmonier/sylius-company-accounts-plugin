@@ -15,12 +15,12 @@ use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterf
  * the guard runs: two admins demoting each other at the same time cannot leave the company
  * without an admin (the second change waits for the first one and is then refused).
  */
-final class MemberUpdater
+final readonly class MemberUpdater
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly CompanyMemberRepositoryInterface $memberRepository,
-        private readonly MemberChangeGuard $guard,
+        private EntityManagerInterface $entityManager,
+        private CompanyMemberRepositoryInterface $memberRepository,
+        private MemberChangeGuard $guard,
     ) {
     }
 
@@ -36,7 +36,7 @@ final class MemberUpdater
         $company = $target->getCompany();
         $actorId = $actor->getId();
         $targetId = $target->getId();
-        if (null === $company || null === $targetId || !$this->entityManager->contains($target)) {
+        if (!$company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface || null === $targetId || !$this->entityManager->contains($target)) {
             return self::ERROR_TARGET_NOT_FOUND;
         }
         if (null === $actorId || !$this->entityManager->contains($actor)) {

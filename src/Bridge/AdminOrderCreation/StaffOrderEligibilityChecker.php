@@ -14,9 +14,9 @@ use Tmonier\SyliusCompanyAccountsPlugin\Member\CompanyOrderEligibilityCheckerInt
  * by staff from the back office (marked by an AdminOrderCreation row) is placed on behalf of
  * its customer, so it counts for the customer's company like an order of the shop.
  */
-final class StaffOrderEligibilityChecker implements CompanyOrderEligibilityCheckerInterface
+final readonly class StaffOrderEligibilityChecker implements CompanyOrderEligibilityCheckerInterface
 {
-    public function __construct(private readonly EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
     }
 
