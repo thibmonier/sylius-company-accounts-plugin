@@ -49,7 +49,7 @@ final class CompanyEventsTest extends KernelTestCase
             CompanyEvents::MEMBER_ENABLED_CHANGED,
             CompanyEvents::MEMBER_REMOVED,
             CompanyEvents::COMPANY_DELETED,
-        ], array_map(static fn ($event): string => $event->getName(), $this->events));
+        ], array_map(static fn (\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyEvent|\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent $event): string => $event->getName(), $this->events));
 
         [, $added, $updated, $roleChanged, $enabledChanged, $removed, $deleted] = $this->events;
         self::assertInstanceOf(CompanyMemberEvent::class, $added);
@@ -119,7 +119,7 @@ final class CompanyEventsTest extends KernelTestCase
         // The next successful flush of the process dispatches its own events only.
         $next = $this->catalog()->company('Next');
 
-        self::assertSame([CompanyEvents::COMPANY_CREATED], array_map(static fn ($event): string => $event->getName(), $this->events));
+        self::assertSame([CompanyEvents::COMPANY_CREATED], array_map(static fn (\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyEvent|\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent $event): string => $event->getName(), $this->events));
         $created = $this->events[0];
         self::assertInstanceOf(CompanyEvent::class, $created);
         self::assertSame($next->getId(), $created->getCompanyId());
@@ -154,7 +154,7 @@ final class CompanyEventsTest extends KernelTestCase
         $this->entityManager()->flush();
 
         self::assertTrue($failed);
-        self::assertSame([CompanyEvents::COMPANY_CREATED, CompanyEvents::MEMBER_ADDED], array_map(static fn ($event): string => $event->getName(), $this->events));
+        self::assertSame([CompanyEvents::COMPANY_CREATED, CompanyEvents::MEMBER_ADDED], array_map(static fn (\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyEvent|\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent $event): string => $event->getName(), $this->events));
     }
 
     public function testTheCompanyOnlyTakesBackTheGroupItGave(): void
@@ -243,7 +243,7 @@ final class CompanyEventsTest extends KernelTestCase
         $this->entityManager()->flush();
         $this->entityManager()->clear();
 
-        self::assertSame([CompanyEvents::MEMBER_REMOVED], array_map(static fn ($event): string => $event->getName(), $this->events));
+        self::assertSame([CompanyEvents::MEMBER_REMOVED], array_map(static fn (\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyEvent|\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent $event): string => $event->getName(), $this->events));
         self::assertEquals(0, $this->connection()->fetchOne('SELECT COUNT(*) FROM tmonier_company_member WHERE id = ?', [$memberId]));
         $company = $this->reload($company);
         self::assertCount(1, $company->getMembers());
@@ -264,7 +264,7 @@ final class CompanyEventsTest extends KernelTestCase
         $this->entityManager()->flush();
         $this->entityManager()->clear();
 
-        self::assertSame([CompanyEvents::MEMBER_REMOVED], array_map(static fn ($event): string => $event->getName(), $this->events));
+        self::assertSame([CompanyEvents::MEMBER_REMOVED], array_map(static fn (\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyEvent|\Tmonier\SyliusCompanyAccountsPlugin\Event\CompanyMemberEvent $event): string => $event->getName(), $this->events));
         self::assertEquals(0, $this->connection()->fetchOne('SELECT COUNT(*) FROM tmonier_company_member WHERE id = ?', [$memberId]));
         self::assertCount(1, $this->reload($company)->getMembers());
     }

@@ -82,7 +82,7 @@ final class TmonierSyliusCompanyAccountsExtension extends AbstractResourceExtens
 
         if ($container->hasExtension('api_platform')) {
             $container->prependExtensionConfig('api_platform', [
-                'mapping' => ['paths' => [\dirname(__DIR__, 2) . '/config/api_platform', \dirname(__DIR__) . '/Api/Shop']],
+                'mapping' => ['paths' => [\dirname(__DIR__, 2) . '/config/api_platform', __DIR__ . '/../Api/Shop']],
             ]);
         }
 

@@ -23,8 +23,8 @@ final class MemberChangeGuardTest extends TestCase
     public function testAnAdminChangesAColleague(): void
     {
         $company = new Company();
-        $admin = self::member($company, 'admin');
-        $buyer = self::member($company, 'buyer');
+        $admin = $this->member($company, 'admin');
+        $buyer = $this->member($company, 'buyer');
 
         self::assertNull($this->guard->check($admin, $buyer, 'approver', true));
         self::assertNull($this->guard->check($admin, $buyer, 'admin', false));
@@ -34,14 +34,14 @@ final class MemberChangeGuardTest extends TestCase
     public function testOnlyActiveAdminsOfTheSameCompanyChangeMembers(): void
     {
         $company = new Company();
-        $buyer = self::member($company, 'buyer');
-        $target = self::member($company, 'buyer');
-        $disabledAdmin = self::member($company, 'admin', false);
-        $foreignAdmin = self::member(new Company(), 'admin');
+        $buyer = $this->member($company, 'buyer');
+        $target = $this->member($company, 'buyer');
+        $disabledAdmin = $this->member($company, 'admin', false);
+        $foreignAdmin = $this->member(new Company(), 'admin');
         $closed = new Company();
         $closed->setEnabled(false);
-        $adminOfClosed = self::member($closed, 'admin');
-        $targetOfClosed = self::member($closed, 'buyer');
+        $adminOfClosed = $this->member($closed, 'admin');
+        $targetOfClosed = $this->member($closed, 'buyer');
 
         self::assertSame(MemberChangeGuard::ERROR_NOT_ALLOWED, $this->guard->check($buyer, $target, 'admin', true));
         self::assertSame(MemberChangeGuard::ERROR_NOT_ALLOWED, $this->guard->check($disabledAdmin, $target, 'admin', true));
@@ -53,14 +53,14 @@ final class MemberChangeGuardTest extends TestCase
     {
         $company = new Company();
 
-        self::assertSame(MemberChangeGuard::ERROR_INVALID_ROLE, $this->guard->check(self::member($company, 'admin'), self::member($company, 'buyer'), 'owner', true));
+        self::assertSame(MemberChangeGuard::ERROR_INVALID_ROLE, $this->guard->check($this->member($company, 'admin'), $this->member($company, 'buyer'), 'owner', true));
     }
 
     public function testNobodyLocksThemselvesOut(): void
     {
         $company = new Company();
-        $admin = self::member($company, 'admin');
-        self::member($company, 'admin');
+        $admin = $this->member($company, 'admin');
+        $this->member($company, 'admin');
 
         self::assertSame(MemberChangeGuard::ERROR_SELF, $this->guard->check($admin, $admin, 'buyer', true));
         self::assertSame(MemberChangeGuard::ERROR_SELF, $this->guard->check($admin, $admin, 'admin', false));
@@ -70,8 +70,8 @@ final class MemberChangeGuardTest extends TestCase
     public function testTheLastEnabledAdminStays(): void
     {
         $company = new Company();
-        $actor = self::member($company, 'admin');
-        $other = self::member($company, 'admin');
+        $actor = $this->member($company, 'admin');
+        $other = $this->member($company, 'admin');
         self::assertNull($this->guard->check($actor, $other, 'buyer', true), 'Two enabled admins.');
 
         // A stale actor (changed concurrently, no longer counted among the enabled admins): the
@@ -83,7 +83,7 @@ final class MemberChangeGuardTest extends TestCase
         self::assertNull($this->guard->check($actor, $other, 'admin', true), 'No change.');
     }
 
-    private static function member(CompanyInterface $company, string $role, bool $enabled = true): CompanyMemberInterface
+    private function member(CompanyInterface $company, string $role, bool $enabled = true): CompanyMemberInterface
     {
         $member = new CompanyMember();
         $member->setRole($role);

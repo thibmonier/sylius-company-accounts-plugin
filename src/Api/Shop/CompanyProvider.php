@@ -10,11 +10,11 @@ use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterf
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
 
 /** @implements ProviderInterface<CompanyView> */
-final class CompanyProvider implements ProviderInterface
+final readonly class CompanyProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly ShopApiAccess $access,
-        private readonly CompanyMemberRepositoryInterface $memberRepository,
+        private ShopApiAccess $access,
+        private CompanyMemberRepositoryInterface $memberRepository,
     ) {
     }
 

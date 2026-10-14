@@ -12,11 +12,11 @@ use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepositoryInterf
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
 
 /** @implements ProviderInterface<CompanyMemberView> */
-final class CompanyMemberProvider implements ProviderInterface
+final readonly class CompanyMemberProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly ShopApiAccess $access,
-        private readonly CompanyMemberRepositoryInterface $memberRepository,
+        private ShopApiAccess $access,
+        private CompanyMemberRepositoryInterface $memberRepository,
     ) {
     }
 
@@ -27,14 +27,14 @@ final class CompanyMemberProvider implements ProviderInterface
 
         if ($operation instanceof CollectionOperationInterface) {
             return array_map(
-                static fn ($member): CompanyMemberView => CompanyMemberView::fromMember($member, $viewer),
+                static fn (\Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface $member): CompanyMemberView => CompanyMemberView::fromMember($member, $viewer),
                 $this->memberRepository->findByCompany($company),
             );
         }
 
         $id = $uriVariables['id'] ?? null;
         $member = is_numeric($id) ? $this->memberRepository->findOneByIdAndCompany((int) $id, $company) : null;
-        if (null === $member) {
+        if (!$member instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface) {
             throw new NotFoundHttpException('Member not found.');
         }
 

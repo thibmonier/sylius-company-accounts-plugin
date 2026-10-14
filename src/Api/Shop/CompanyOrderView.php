@@ -23,34 +23,34 @@ use Sylius\Component\Core\Model\OrderItemInterface;
         new GetCollection(
             uriTemplate: '/shop/company/orders',
             security: "is_granted('ROLE_USER')",
-            provider: CompanyOrderProvider::class,
             name: 'tmonier_company_accounts_shop_company_orders_get',
+            provider: CompanyOrderProvider::class,
         ),
         new Get(
             uriTemplate: '/shop/company/orders/{number}',
             security: "is_granted('ROLE_USER')",
-            provider: CompanyOrderProvider::class,
             name: 'tmonier_company_accounts_shop_company_order_get',
+            provider: CompanyOrderProvider::class,
         ),
     ],
 )]
-final class CompanyOrderView
+final readonly class CompanyOrderView
 {
     /**
      * @param list<array{productName: string|null, variantName: string|null, variantCode: string|null, quantity: int, unitPrice: int, total: int}> $items
      */
     public function __construct(
         #[ApiProperty(identifier: true)]
-        public readonly string $number,
-        public readonly ?\DateTimeInterface $checkoutCompletedAt,
-        public readonly ?string $placedBy,
-        public readonly string $state,
-        public readonly ?string $paymentState,
-        public readonly ?string $shippingState,
-        public readonly ?string $currencyCode,
-        public readonly int $itemsTotal,
-        public readonly int $total,
-        public readonly array $items,
+        public string $number,
+        public ?\DateTimeInterface $checkoutCompletedAt,
+        public ?string $placedBy,
+        public string $state,
+        public ?string $paymentState,
+        public ?string $shippingState,
+        public ?string $currencyCode,
+        public int $itemsTotal,
+        public int $total,
+        public array $items,
     ) {
     }
 

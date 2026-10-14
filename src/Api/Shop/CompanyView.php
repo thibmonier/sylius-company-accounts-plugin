@@ -17,24 +17,24 @@ use ApiPlatform\Metadata\Get;
             uriVariables: [],
             description: 'The company of the signed-in customer: 404 without membership, 403 when the membership or the company is disabled.',
             security: "is_granted('ROLE_USER')",
-            provider: CompanyProvider::class,
             name: 'tmonier_company_accounts_shop_company_get',
+            provider: CompanyProvider::class,
         ),
     ],
 )]
-final class CompanyView
+final readonly class CompanyView
 {
     public function __construct(
         #[ApiProperty(identifier: true)]
-        public readonly string $code,
-        public readonly string $name,
-        public readonly ?string $vatNumber,
-        public readonly ?string $registrationNumber,
+        public string $code,
+        public string $name,
+        public ?string $vatNumber,
+        public ?string $registrationNumber,
         /** Role of the signed-in member: admin, buyer or approver. */
-        public readonly string $role,
-        public readonly int $membersCount,
-        public readonly bool $canManageMembers,
-        public readonly bool $canViewCompanyOrders,
+        public string $role,
+        public int $membersCount,
+        public bool $canManageMembers,
+        public bool $canViewCompanyOrders,
     ) {
     }
 }

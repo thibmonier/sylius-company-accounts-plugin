@@ -16,12 +16,12 @@ use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyOrderRepositoryInterfa
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
 
 /** @implements ProviderInterface<CompanyOrderView> */
-final class CompanyOrderProvider implements ProviderInterface
+final readonly class CompanyOrderProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly ShopApiAccess $access,
-        private readonly CompanyOrderRepositoryInterface $companyOrderRepository,
-        private readonly Pagination $pagination,
+        private ShopApiAccess $access,
+        private CompanyOrderRepositoryInterface $companyOrderRepository,
+        private Pagination $pagination,
     ) {
     }
 
@@ -47,7 +47,7 @@ final class CompanyOrderProvider implements ProviderInterface
 
         $number = $uriVariables['number'] ?? null;
         $order = is_string($number) ? $this->companyOrderRepository->findOrderByCompanyAndNumber($company, $number) : null;
-        if (null === $order || !$this->access->isGranted(CompanyPermissions::ORDER_VIEW_COMPANY, $order)) {
+        if (!$order instanceof \Sylius\Component\Core\Model\OrderInterface || !$this->access->isGranted(CompanyPermissions::ORDER_VIEW_COMPANY, $order)) {
             throw new NotFoundHttpException('Order not found.');
         }
 

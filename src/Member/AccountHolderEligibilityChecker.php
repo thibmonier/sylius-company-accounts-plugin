@@ -18,6 +18,6 @@ final class AccountHolderEligibilityChecker implements CompanyOrderEligibilityCh
     {
         $customer = $order->getCustomer();
 
-        return !$order->isCreatedByGuest() && $customer instanceof CustomerInterface && null !== $customer->getUser();
+        return !$order->isCreatedByGuest() && $customer instanceof CustomerInterface && $customer->getUser() instanceof \Sylius\Component\User\Model\UserInterface;
     }
 }

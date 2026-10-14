@@ -70,7 +70,7 @@ final class CompanyChangeListener implements ResetInterface
                 $this->flushing[] = $this->memberEvent(CompanyEvents::MEMBER_ADDED, $entity);
                 $group = $entity->getCompany()?->getDefaultCustomerGroup();
                 $customer = $entity->getCustomer();
-                if (null !== $group && null !== $customer && null === $customer->getGroup()) {
+                if ($group instanceof \Sylius\Component\Customer\Model\CustomerGroupInterface && $customer instanceof \Sylius\Component\Core\Model\CustomerInterface && !$customer->getGroup() instanceof \Sylius\Component\Customer\Model\CustomerGroupInterface) {
                     $this->changeGroup($entityManager, $customer, $group);
                     $this->markGroupAssigned($entityManager, $entity, true);
                 }
@@ -79,16 +79,16 @@ final class CompanyChangeListener implements ResetInterface
 
         foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
             if ($entity instanceof CompanyInterface) {
-                $changes = self::changes($unitOfWork, $entity);
+                $changes = $this->changes($unitOfWork, $entity);
                 if ([] !== $changes) {
                     $this->flushing[] = $this->companyEvent(CompanyEvents::COMPANY_UPDATED, $entity, $changes);
                 }
                 $groupChange = $unitOfWork->getEntityChangeSet($entity)['defaultCustomerGroup'] ?? null;
                 if (null !== $groupChange) {
-                    $this->moveDefaultGroup($entityManager, $entity, self::group($groupChange[0]), self::group($groupChange[1]));
+                    $this->moveDefaultGroup($entityManager, $entity, $this->group($groupChange[0]), $this->group($groupChange[1]));
                 }
             } elseif ($entity instanceof CompanyMemberInterface) {
-                $changes = self::changes($unitOfWork, $entity);
+                $changes = $this->changes($unitOfWork, $entity);
                 if (isset($changes['role'])) {
                     $this->flushing[] = $this->memberEvent(CompanyEvents::MEMBER_ROLE_CHANGED, $entity, ['role' => $changes['role']]);
                 }
@@ -105,7 +105,7 @@ final class CompanyChangeListener implements ResetInterface
                 $this->flushing[] = $this->memberEvent(CompanyEvents::MEMBER_REMOVED, $entity);
                 $group = $entity->getCompany()?->getDefaultCustomerGroup();
                 $customer = $entity->getCustomer();
-                if ($entity->isCustomerGroupAssigned() && null !== $group && null !== $customer && $customer->getGroup() === $group) {
+                if ($entity->isCustomerGroupAssigned() && $group instanceof \Sylius\Component\Customer\Model\CustomerGroupInterface && $customer instanceof \Sylius\Component\Core\Model\CustomerInterface && $customer->getGroup() === $group) {
                     $this->changeGroup($entityManager, $customer, null);
                 }
             }
@@ -160,10 +160,10 @@ final class CompanyChangeListener implements ResetInterface
                 continue;
             }
             $current = $customer->getGroup();
-            if ($member->isCustomerGroupAssigned() && null !== $previous && $current === $previous) {
+            if ($member->isCustomerGroupAssigned() && $previous instanceof \Sylius\Component\Customer\Model\CustomerGroupInterface && $current === $previous) {
                 $this->changeGroup($entityManager, $customer, $next);
-                $this->markGroupAssigned($entityManager, $member, null !== $next);
-            } elseif (null === $current && null !== $next) {
+                $this->markGroupAssigned($entityManager, $member, $next instanceof \Sylius\Component\Customer\Model\CustomerGroupInterface);
+            } elseif (null === $current && $next instanceof \Sylius\Component\Customer\Model\CustomerGroupInterface) {
                 $this->changeGroup($entityManager, $customer, $next);
                 $this->markGroupAssigned($entityManager, $member, true);
             }
@@ -218,14 +218,14 @@ final class CompanyChangeListener implements ResetInterface
     }
 
     /** @return array<string, array{0: mixed, 1: mixed}> scalars as is, entities as ids */
-    private static function changes(UnitOfWork $unitOfWork, object $entity): array
+    private function changes(UnitOfWork $unitOfWork, object $entity): array
     {
         $changes = [];
         foreach ($unitOfWork->getEntityChangeSet($entity) as $field => $change) {
             if (in_array($field, self::IGNORED_FIELDS, true)) {
                 continue;
             }
-            [$old, $new] = [self::value($change[0] ?? null), self::value($change[1] ?? null)];
+            [$old, $new] = [$this->value($change[0] ?? null), $this->value($change[1] ?? null)];
             if ($old !== $new) {
                 $changes[$field] = [$old, $new];
             }
@@ -234,7 +234,7 @@ final class CompanyChangeListener implements ResetInterface
         return $changes;
     }
 
-    private static function value(mixed $value): mixed
+    private function value(mixed $value): mixed
     {
         if (is_object($value) && method_exists($value, 'getId')) {
             return $value->getId();
@@ -243,7 +243,7 @@ final class CompanyChangeListener implements ResetInterface
         return $value instanceof \DateTimeInterface ? $value->format(\DateTimeInterface::ATOM) : $value;
     }
 
-    private static function group(mixed $group): ?CustomerGroupInterface
+    private function group(mixed $group): ?CustomerGroupInterface
     {
         return $group instanceof CustomerGroupInterface ? $group : null;
     }

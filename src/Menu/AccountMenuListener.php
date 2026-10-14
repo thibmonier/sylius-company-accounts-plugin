@@ -10,18 +10,18 @@ use Tmonier\SyliusCompanyAccountsPlugin\Member\CurrentMemberResolverInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyPermissions;
 
 /** "My company" in the customer account menu, for enabled members of an enabled company only. */
-final class AccountMenuListener
+final readonly class AccountMenuListener
 {
     public function __construct(
-        private readonly CurrentMemberResolverInterface $currentMemberResolver,
-        private readonly AuthorizationCheckerInterface $authorizationChecker,
+        private CurrentMemberResolverInterface $currentMemberResolver,
+        private AuthorizationCheckerInterface $authorizationChecker,
     ) {
     }
 
     public function __invoke(MenuBuilderEvent $event): void
     {
         $company = $this->currentMemberResolver->getMember()?->getCompany();
-        if (null === $company || !$this->authorizationChecker->isGranted(CompanyPermissions::COMPANY_VIEW, $company)) {
+        if (!$company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface || !$this->authorizationChecker->isGranted(CompanyPermissions::COMPANY_VIEW, $company)) {
             return;
         }
 

@@ -88,7 +88,7 @@ final class ShopCompanyOrdersTest extends WebTestCase
 
         self::assertCount(20, $firstPage);
         self::assertCount(3, $secondPage);
-        $all = array_map(static fn ($order): string => (string) $order->getNumber(), $orders);
+        $all = array_map(static fn (\Sylius\Component\Core\Model\OrderInterface $order): string => (string) $order->getNumber(), $orders);
         self::assertEqualsCanonicalizing($all, array_merge($firstPage, $secondPage));
     }
 }

@@ -21,15 +21,15 @@ use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
             uriTemplate: '/shop/company/members',
             paginationEnabled: false,
             security: "is_granted('ROLE_USER')",
-            provider: CompanyMemberProvider::class,
             name: 'tmonier_company_accounts_shop_company_members_get',
+            provider: CompanyMemberProvider::class,
         ),
         new Get(
             uriTemplate: '/shop/company/members/{id}',
             requirements: ['id' => '\d+'],
             security: "is_granted('ROLE_USER')",
-            provider: CompanyMemberProvider::class,
             name: 'tmonier_company_accounts_shop_company_member_get',
+            provider: CompanyMemberProvider::class,
         ),
         new Patch(
             uriTemplate: '/shop/company/members/{id}',
@@ -38,22 +38,22 @@ use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
             security: "is_granted('ROLE_USER')",
             input: UpdateCompanyMemberInput::class,
             read: false,
-            processor: UpdateCompanyMemberProcessor::class,
             name: 'tmonier_company_accounts_shop_company_member_patch',
+            processor: UpdateCompanyMemberProcessor::class,
         ),
     ],
 )]
-final class CompanyMemberView
+final readonly class CompanyMemberView
 {
     public function __construct(
         #[ApiProperty(identifier: true)]
-        public readonly int $id,
-        public readonly ?string $firstName,
-        public readonly ?string $lastName,
-        public readonly string $role,
-        public readonly bool $enabled,
+        public int $id,
+        public ?string $firstName,
+        public ?string $lastName,
+        public string $role,
+        public bool $enabled,
         /** The signed-in member themselves. */
-        public readonly bool $me,
+        public bool $me,
     ) {
     }
 

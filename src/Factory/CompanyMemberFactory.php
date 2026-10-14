@@ -11,12 +11,12 @@ use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyRepositoryInterface;
 
-final class CompanyMemberFactory implements CompanyMemberFactoryInterface
+final readonly class CompanyMemberFactory implements CompanyMemberFactoryInterface
 {
     /** @param FactoryInterface<CompanyMemberInterface> $decorated */
     public function __construct(
-        private readonly FactoryInterface $decorated,
-        private readonly CompanyRepositoryInterface $companyRepository,
+        private FactoryInterface $decorated,
+        private CompanyRepositoryInterface $companyRepository,
     ) {
     }
 

@@ -38,7 +38,7 @@ final class CompanyVoter extends Voter
     {
         $member = $this->currentMemberResolver->getMember($token);
         $company = $member?->getCompany();
-        if (null === $member || null === $company || !$member->isActive() || null === $subject->getId() || $company->getId() !== $subject->getId()) {
+        if (!$member instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface || !$company instanceof \Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface || !$member->isActive() || null === $subject->getId() || $company->getId() !== $subject->getId()) {
             return false;
         }
 
