@@ -31,7 +31,7 @@ final class ShopCompanyTabsTest extends WebTestCase
             self::assertResponseIsSuccessful();
             $tabs = $crawler->filter('[data-test-tmonier-company-navigation] > li');
             self::assertSame(
-                [$this->shopUrl('/account/company'), $this->shopUrl('/account/company/members'), $this->shopUrl('/account/company/orders'), '#extra'],
+                [$this->shopUrl('/account/company'), $this->shopUrl('/account/company/members'), $this->shopUrl('/account/company/orders'), $this->shopUrl('/account/company/addresses'), '#extra'],
                 $tabs->filter('a')->each(static fn ($link): string => (string) $link->attr('href')),
                 $path,
             );
@@ -50,7 +50,7 @@ final class ShopCompanyTabsTest extends WebTestCase
 
         $crawler = $this->client->request('GET', $this->shopUrl('/account/company'));
 
-        self::assertSame(3, $crawler->filter('[data-test-tmonier-company-navigation] > li')->count());
+        self::assertSame(4, $crawler->filter('[data-test-tmonier-company-navigation] > li')->count(), 'Overview, members, addresses and the extra tab: no orders tab.');
         self::assertCount(0, $crawler->filter('[data-test-tmonier-company-orders-link]'));
     }
 }
