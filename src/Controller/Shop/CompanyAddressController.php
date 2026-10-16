@@ -7,8 +7,10 @@ namespace Tmonier\SyliusCompanyAccountsPlugin\Controller\Shop;
 use Doctrine\ORM\EntityManagerInterface;
 use Sylius\Component\Core\Model\AddressInterface;
 use Sylius\Component\Core\Model\OrderInterface;
+use Sylius\Component\Core\OrderCheckoutStates;
 use Sylius\Component\Order\Context\CartContextInterface;
 use Sylius\Component\Order\Context\CartNotFoundException;
+use Sylius\Component\Order\Processor\OrderProcessorInterface;
 use Sylius\Resource\Factory\FactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -41,6 +43,7 @@ final class CompanyAddressController extends AbstractController
         private readonly FactoryInterface $addressFactory,
         private readonly EntityManagerInterface $entityManager,
         private readonly CartContextInterface $cartContext,
+        private readonly OrderProcessorInterface $orderProcessor,
     ) {
     }
 
@@ -86,8 +89,9 @@ final class CompanyAddressController extends AbstractController
     }
 
     /**
-     * Copies a shared address to the shipping address of the current cart and goes back to the
-     * address step, where it pre-fills the form. The order keeps its own copy.
+     * Copies a shared address to the shipping address of the current cart, recalculates the cart,
+     * resets the checkout to its first step and goes to the address step, where the form is
+     * pre-filled. The order keeps its own copy.
      */
     public function useAction(Request $request, int $id): RedirectResponse
     {
@@ -104,21 +108,32 @@ final class CompanyAddressController extends AbstractController
             return $this->redirectToRoute('sylius_shop_cart_summary');
         }
 
-        $copy = $this->addressFactory->createNew();
-        $copy->setFirstName($source->getFirstName());
-        $copy->setLastName($source->getLastName());
-        $copy->setPhoneNumber($source->getPhoneNumber());
-        $copy->setCompany($source->getCompany());
-        $copy->setCountryCode($source->getCountryCode());
-        $copy->setProvinceCode($source->getProvinceCode());
-        $copy->setProvinceName($source->getProvinceName());
-        $copy->setStreet($source->getStreet());
-        $copy->setCity($source->getCity());
-        $copy->setPostcode($source->getPostcode());
-        $order->setShippingAddress($copy);
+        $this->copyInto($source, $order->getShippingAddress() ?? $this->addressFactory->createNew(), $order);
+        // The destination may change the zone: taxes, shipping fees and methods must be computed
+        // again, and the customer goes back through address > shipping > payment.
+        $order->setCheckoutState(OrderCheckoutStates::STATE_CART);
+        $this->orderProcessor->process($order);
         $this->entityManager->flush();
 
         return $this->redirectToRoute('sylius_shop_checkout_address');
+    }
+
+    /** Reuses the shipping address of the order when it has one, so no address is left orphaned. */
+    private function copyInto(AddressInterface $source, AddressInterface $target, OrderInterface $order): void
+    {
+        $target->setFirstName($source->getFirstName());
+        $target->setLastName($source->getLastName());
+        $target->setPhoneNumber($source->getPhoneNumber());
+        $target->setCompany($source->getCompany());
+        $target->setCountryCode($source->getCountryCode());
+        $target->setProvinceCode($source->getProvinceCode());
+        $target->setProvinceName($source->getProvinceName());
+        $target->setStreet($source->getStreet());
+        $target->setCity($source->getCity());
+        $target->setPostcode($source->getPostcode());
+        if ($order->getShippingAddress() !== $target) {
+            $order->setShippingAddress($target);
+        }
     }
 
     private function handleForm(Request $request, CompanyAddressInterface $entry, CompanyMemberInterface $member, CompanyInterface $company, string $flash): Response

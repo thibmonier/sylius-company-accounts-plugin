@@ -195,6 +195,7 @@ return static function (ContainerConfigurator $container): void {
             service('sylius.factory.address'),
             service('doctrine.orm.entity_manager'),
             service('sylius.context.cart'),
+            service('sylius.order_processing.order_processor'),
         ])
         ->call('setContainer', [service(\Psr\Container\ContainerInterface::class)])
         ->tag('controller.service_arguments')

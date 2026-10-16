@@ -6,8 +6,11 @@ namespace Tests\Tmonier\SyliusCompanyAccountsPlugin\Functional;
 
 use Sylius\Component\Core\Model\AddressInterface;
 use Sylius\Component\Core\Model\OrderInterface;
+use Sylius\Component\Core\OrderCheckoutStates;
 use Sylius\Resource\Factory\FactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Validator\ConstraintViolationInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyAddressInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyAddressRepositoryInterface;
@@ -144,6 +147,71 @@ final class ShopCompanyAddressesTest extends WebTestCase
         self::assertSame('12 rue de la Gare', $shipping->getStreet());
         self::assertNotSame($entry->getAddress()?->getId(), $shipping->getId(), 'The order has its own copy.');
         self::assertStringContainsString('12 rue de la Gare', (string) $this->client->getResponse()->getContent());
+    }
+
+    public function testPickingAnAddressTwiceReusesTheShippingAddressOfTheOrder(): void
+    {
+        $s = new CompanyScenario($this->catalog());
+        $entry = $this->entry($s->companyA, 'Lyon plant');
+        $customer = CompanyScenario::customerOf($s->buyerA);
+        $this->catalog()->cart($customer);
+        $this->loginShopUser($customer);
+        $before = $this->addressRows();
+
+        $this->pick($entry);
+        $afterFirst = $this->addressRows();
+        $this->pick($entry);
+        $afterSecond = $this->addressRows();
+
+        self::assertSame($before + 1, $afterFirst);
+        self::assertSame($afterFirst, $afterSecond, 'The second pick copies into the existing address.');
+    }
+
+    public function testPickingAnAddressSendsTheCheckoutBackAndRecalculatesTheCart(): void
+    {
+        $s = new CompanyScenario($this->catalog());
+        $entry = $this->entry($s->companyA, 'Lyon plant');
+        $customer = CompanyScenario::customerOf($s->buyerA);
+        $cart = $this->catalog()->cart($customer);
+        $cart->setCheckoutState(OrderCheckoutStates::STATE_PAYMENT_SELECTED);
+        $this->entityManager()->flush();
+        $this->loginShopUser($customer);
+
+        $this->pick($entry);
+
+        $order = $this->entityManager()->getRepository(OrderInterface::class)->find($cart->getId());
+        self::assertInstanceOf(OrderInterface::class, $order);
+        $this->entityManager()->refresh($order);
+        self::assertSame(OrderCheckoutStates::STATE_CART, $order->getCheckoutState());
+        self::assertSame($order->getItemsTotal() + $order->getAdjustmentsTotal(), $order->getTotal(), 'The cart has been processed.');
+        $this->client->request('GET', $this->shopUrl('/checkout/complete'));
+        self::assertResponseRedirects();
+    }
+
+    public function testALabelMadeOfSpacesIsBlank(): void
+    {
+        $s = new CompanyScenario($this->catalog());
+        $entry = $this->entry($s->companyA, '   ');
+
+        /** @var ValidatorInterface $validator */
+        $validator = self::getContainer()->get('validator');
+        $violations = $validator->validate($entry, null, ['sylius']);
+
+        self::assertGreaterThan(0, count(array_filter(iterator_to_array($violations), static fn (ConstraintViolationInterface $v): bool => 'label' === $v->getPropertyPath())));
+    }
+
+    private function addressRows(): int
+    {
+        $count = $this->entityManager()->getConnection()->fetchOne('SELECT COUNT(*) FROM sylius_address');
+
+        return is_numeric($count) ? (int) $count : 0;
+    }
+
+    private function pick(CompanyAddressInterface $entry): void
+    {
+        $token = $this->sessionCsrfToken('tmonier_company_address_use_' . $this->idOf($entry));
+        $this->client->request('POST', $this->shopUrl(sprintf('/account/company/addresses/%d/use', $this->idOf($entry))), ['_csrf_token' => $token]);
+        self::assertResponseRedirects($this->shopUrl('/checkout/address'));
     }
 
     public function testACompanyWithoutSharedAddressKeepsTheStandardCheckout(): void
