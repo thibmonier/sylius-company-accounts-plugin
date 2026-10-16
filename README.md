@@ -269,7 +269,9 @@ context.
 - The VAT number is not checked against VIES.
 - The shared address book is delivery addresses only (no billing address, no default address, not exposed by the shop API in 1.2). The checkout copies the address: later changes never alter placed orders.
 - Deleting a company deletes its memberships, its shared addresses and its company order links (the orders stay):
-  disable it instead to keep the history.
+  disable it instead to keep the history. Delete companies through the ORM (back office, Doctrine
+  entity manager): a raw SQL `DELETE` bypasses it and can leave the `sylius_address` rows of its
+  shared addresses orphaned.
 - Plugins that anonymise customers instead of deleting them keep the membership (with the
   anonymised name): detach the member if needed.
 - Changing a company's default group touches every member in the flush (fine for tens or
