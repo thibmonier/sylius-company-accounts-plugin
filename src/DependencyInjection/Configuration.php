@@ -11,11 +11,14 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\Company;
+use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyAddress;
+use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyAddressInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMember;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyMemberInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyOrder;
 use Tmonier\SyliusCompanyAccountsPlugin\Entity\CompanyOrderInterface;
+use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyAddressRepository;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyMemberRepository;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyOrderRepository;
 use Tmonier\SyliusCompanyAccountsPlugin\Repository\CompanyRepository;
@@ -41,6 +44,7 @@ final class Configuration implements ConfigurationInterface
                     ->addDefaultsIfNotSet()
                     ->append($this->resource('company', Company::class, CompanyInterface::class, CompanyRepository::class))
                     ->append($this->resource('company_member', CompanyMember::class, CompanyMemberInterface::class, CompanyMemberRepository::class))
+                    ->append($this->resource('company_address', CompanyAddress::class, CompanyAddressInterface::class, CompanyAddressRepository::class))
                     ->append($this->resource('company_order', CompanyOrder::class, CompanyOrderInterface::class, CompanyOrderRepository::class))
                 ->end()
             ->end()

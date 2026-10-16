@@ -1,0 +1,6 @@
+{% extends '@SyliusShop/account/common/index.html.twig' %}
+
+{% set prefixes = ['tmonier_company_accounts_shop.account.company.addresses'] %}
+{% set attrs = { company, member, addresses, page: 'addresses' } %}
+
+{% block title %}{{ 'tmonier_company_accounts.ui.addresses'|trans }} | {{ parent() }}{% endblock %}

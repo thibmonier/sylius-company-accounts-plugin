@@ -41,7 +41,12 @@ two orders each for the admin and the buyer. Dev server:
   `src/Migrations`, Schema API): `Company` (code, name, VAT number, registration number,
   enabled, default customer group), `CompanyMember` (OneToOne unique customer, role, enabled;
   DB cascade on customer and company deletion), `CompanyOrder` (company of an order, recorded at
-  checkout, OneToOne unique order).
+  checkout, OneToOne unique order), `CompanyAddress` (1.2: label + owned Sylius `Address`, OneToOne
+  unique, ManyToOne company one-way: `CompanyInterface` is untouched; `CompanyRemovalListener` removes
+  the addresses of a deleted company). Shared address book: `Controller/Shop/CompanyAddressController`
+  (COMPANY_VIEW reads and uses, COMPANY_MANAGE_ADDRESSES writes), checkout picker = hook
+  `sylius_shop.checkout.address.content` + `tmonier_company_addresses()` Twig function.
+  1.x rule: no new method on existing interfaces (`BackwardCompatibilityTest`).
 - `Security/CompanyVoter` (COMPANY_VIEW, COMPANY_MANAGE_MEMBERS, ORDER_VIEW_COMPANY on a
   company) and `Security/OrderVoter` (ORDER_VIEW_OWN, ORDER_VIEW_COMPANY on an order), both
   through `Member/CurrentMemberResolver` (shop user token only). `company_orders_roles`

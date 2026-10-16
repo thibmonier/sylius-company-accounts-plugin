@@ -1,5 +1,13 @@
 tmonier_company_accounts:
     ui:
+        addresses: 'Adressen'
+        add_address: 'Adres toevoegen'
+        no_addresses: 'Het bedrijf heeft nog geen gedeelde adressen.'
+        addresses_help: 'Afleveradressen die door de leden van het bedrijf worden gedeeld. Alleen beheerders van het bedrijf wijzigen ze.'
+        addresses_admin_help: 'Afleveradressen die alle leden van het bedrijf delen en bij het afrekenen kunnen kiezen. U kunt ze toevoegen, wijzigen en verwijderen.'
+        checkout_addresses: 'Bedrijfsadressen'
+        checkout_addresses_help: 'Lever op een van de adressen die uw bedrijf deelt.'
+        use_address: 'Hier leveren'
         companies: 'Bedrijven'
         company: 'Bedrijf'
         company_member: 'Bedrijfslid'
@@ -36,6 +44,8 @@ tmonier_company_accounts:
         buyer: 'Koper'
         approver: 'Goedkeurder'
     form:
+        address_label: 'Naam van het adres'
+        address_label_help: 'Bijvoorbeeld "Fabriek Lyon". Zichtbaar voor alle leden.'
         vat_number: 'Btw-nummer'
         registration_number: 'Registratienummer (KvK...)'
         registration_number_help: 'KvK-nummer, ondernemingsnummer...'

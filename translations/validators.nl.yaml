@@ -14,3 +14,6 @@ tmonier_company_accounts:
         self_change: 'U kunt uw eigen rol of status niet wijzigen.'
         last_admin: 'Het bedrijf moet minstens één actieve beheerder houden.'
         not_found: 'Dit lid hoort niet meer bij het bedrijf.'
+    address:
+        label:
+            not_blank: 'Voer een naam voor het adres in.'

@@ -1,5 +1,13 @@
 tmonier_company_accounts:
     ui:
+        addresses: 'Direcciones'
+        add_address: 'Añadir una dirección'
+        no_addresses: 'La empresa aún no tiene direcciones compartidas.'
+        addresses_help: 'Direcciones de entrega compartidas por los miembros de la empresa. Solo los administradores de la empresa las modifican.'
+        addresses_admin_help: 'Direcciones de entrega compartidas por todos los miembros de la empresa, que pueden elegirlas al pagar. Puede añadirlas, modificarlas y eliminarlas.'
+        checkout_addresses: 'Direcciones de la empresa'
+        checkout_addresses_help: 'Entregar en una de las direcciones compartidas por su empresa.'
+        use_address: 'Entregar aquí'
         companies: 'Empresas'
         company: 'Empresa'
         company_member: 'Miembro de empresa'
@@ -36,6 +44,8 @@ tmonier_company_accounts:
         buyer: 'Comprador'
         approver: 'Aprobador'
     form:
+        address_label: 'Nombre de la dirección'
+        address_label_help: 'Por ejemplo «Fábrica de Lyon». Visible para todos los miembros.'
         vat_number: 'NIF-IVA'
         registration_number: 'Número de registro'
         registration_number_help: 'CIF, número del Registro Mercantil...'

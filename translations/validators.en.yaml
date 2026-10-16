@@ -14,3 +14,6 @@ tmonier_company_accounts:
         self_change: 'You cannot change your own role or status.'
         last_admin: 'The company must keep at least one enabled admin.'
         not_found: 'This member is no longer in the company.'
+    address:
+        label:
+            not_blank: 'Please enter a name for the address.'

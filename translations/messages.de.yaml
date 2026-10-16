@@ -1,5 +1,13 @@
 tmonier_company_accounts:
     ui:
+        addresses: 'Adressen'
+        add_address: 'Adresse hinzufügen'
+        no_addresses: 'Das Unternehmen hat noch keine gemeinsame Adresse.'
+        addresses_help: 'Lieferadressen, die von den Mitgliedern des Unternehmens geteilt werden. Nur Unternehmensadministratoren ändern sie.'
+        addresses_admin_help: 'Lieferadressen, die alle Mitglieder des Unternehmens teilen und an der Kasse auswählen können. Sie können sie hinzufügen, ändern und entfernen.'
+        checkout_addresses: 'Unternehmensadressen'
+        checkout_addresses_help: 'An eine der von Ihrem Unternehmen geteilten Adressen liefern.'
+        use_address: 'Hierhin liefern'
         companies: 'Unternehmen'
         company: 'Unternehmen'
         company_member: 'Unternehmensmitglied'
@@ -36,6 +44,8 @@ tmonier_company_accounts:
         buyer: 'Käufer'
         approver: 'Genehmiger'
     form:
+        address_label: 'Name der Adresse'
+        address_label_help: 'Zum Beispiel „Werk Lyon“. Für alle Mitglieder sichtbar.'
         vat_number: 'USt-IdNr.'
         registration_number: 'Registernummer'
         registration_number_help: 'Handelsregisternummer, Steuernummer...'

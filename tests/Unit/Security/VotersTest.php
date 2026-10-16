@@ -59,6 +59,26 @@ final class VotersTest extends TestCase
         self::assertSame(VoterInterface::ACCESS_ABSTAIN, $voter->vote(new NullToken(), $company, ['ROLE_USER']));
     }
 
+    public function testOnlyEnabledAdminsOfTheCompanyManageItsAddresses(): void
+    {
+        $company = $this->company(1);
+        $voter = $this->companyVoter();
+
+        foreach (['admin' => true, 'approver' => false, 'buyer' => false] as $role => $mayManage) {
+            $this->current = $this->member($company, $role);
+            self::assertSame($mayManage, $this->grants($voter, CompanyPermissions::COMPANY_MANAGE_ADDRESSES, $company), $role);
+            // Reading the address book is COMPANY_VIEW, open to every enabled member.
+            self::assertTrue($this->grants($voter, CompanyPermissions::COMPANY_VIEW, $company), $role . ' view');
+        }
+
+        $this->current = $this->member($company, 'admin', false);
+        self::assertFalse($this->grants($voter, CompanyPermissions::COMPANY_MANAGE_ADDRESSES, $company), 'disabled admin');
+        self::assertFalse($this->grants($voter, CompanyPermissions::COMPANY_VIEW, $company), 'disabled admin view');
+
+        $this->current = $this->member($company, 'admin');
+        self::assertFalse($this->grants($voter, CompanyPermissions::COMPANY_MANAGE_ADDRESSES, $this->company(2)), 'other company');
+    }
+
     public function testTheCompanyOrdersRolesAreConfigurable(): void
     {
         $company = $this->company(1);

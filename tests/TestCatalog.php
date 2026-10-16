@@ -174,6 +174,36 @@ final class TestCatalog
         return $group;
     }
 
+    /** The open cart of a customer (what the cart context finds for a signed-in customer). */
+    public function cart(CustomerInterface $customer): OrderInterface
+    {
+        $channel = $this->channel();
+        /** @var FactoryInterface<OrderInterface> $orderFactory */
+        $orderFactory = $this->container->get('sylius.factory.order');
+        $order = $orderFactory->createNew();
+        $order->setChannel($channel);
+        $order->setLocaleCode($this->localeCode());
+        $order->setCurrencyCode((string) $channel->getBaseCurrency()?->getCode());
+        $order->setCustomerWithAuthorization($customer);
+        $order->setTokenValue(bin2hex(random_bytes(10)));
+
+        /** @var FactoryInterface<OrderItemInterface> $itemFactory */
+        $itemFactory = $this->container->get('sylius.factory.order_item');
+        $item = $itemFactory->createNew();
+        $item->setVariant($this->variant());
+        /** @var OrderItemQuantityModifierInterface $quantityModifier */
+        $quantityModifier = $this->container->get('sylius.modifier.order_item_quantity');
+        $quantityModifier->modify($item, 2);
+        /** @var OrderModifierInterface $orderModifier */
+        $orderModifier = $this->container->get('sylius.modifier.order');
+        $orderModifier->addToOrder($order, $item);
+
+        $this->entityManager()->persist($order);
+        $this->entityManager()->flush();
+
+        return $order;
+    }
+
     /**
      * An order placed through the checkout state machine (completed in the last flush). Signed-in
      * customers get setCustomerWithAuthorization(), as the shop does; `$asGuest` places it as a

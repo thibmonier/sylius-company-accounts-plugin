@@ -6,7 +6,7 @@
  # Another plugin's page renders this same template with company, member and active_tab.
  #}
 {% set context = hookable_metadata.context %}
-{% set page_tabs = {'show': 'overview', 'members': 'members', 'orders': 'orders'} %}
+{% set page_tabs = {'show': 'overview', 'members': 'members', 'orders': 'orders', 'addresses': 'addresses', 'address_form': 'addresses'} %}
 {% set active_tab = context.active_tab|default(page_tabs[context.page|default('')]|default(null)) %}
 
 <ul class="nav nav-tabs mt-4" {{ sylius_test_html_attribute('tmonier-company-navigation') }}>

@@ -18,11 +18,12 @@ the company admins in the shop.
 | Model the customer's company | **Company**: name, code, VAT number, registration number (SIREN, Companies House...), enabled flag, optional **default customer group** given to its members (prices, promotions). Own tables, no change to Customer, ShopUser or Order. |
 | Several buyers per company | **Members**: existing customers attached to one company each, with a role (**admin**, **buyer**, **approver**) and an enabled flag. Approvers are stored for the purchase approval plugin (v1b). |
 | Let the company manage its people | **My company** in the customer account: overview, **Members** (company admins change the role and the status of their colleagues; nobody changes themselves and the company keeps an enabled admin), **Company orders** (read-only). |
+| Deliver to the company's sites | **Shared address book** (*My company > Addresses*): admins add, change and remove delivery addresses ("Lyon plant"); every member sees them and picks one at the checkout (*Deliver here*, copied to the order). Without shared address the checkout is unchanged. |
 | Show company orders without breaking privacy | An order is a **company order** when an active member places it while signed in, or when staff create it for them with [tmonier/sylius-admin-order-creation-plugin](https://github.com/thibmonier/sylius-admin-order-creation-plugin) (recorded at checkout, kept if the member leaves; orders placed before joining stay personal). Admins and approvers see them (configurable); buyers see their own orders as before. The core order pages stay owner-only. |
 | Minimise personal data | Members see the **names and roles** of their colleagues, never their e-mail or phone; company order pages show items, totals and states, not the addresses. |
 | Manage companies in the back office | *Customers > Companies*: grid, form, **members sub-grid** with *Attach a customer* (autocomplete on customers with a shop account and no company), edit, *Detach*; the customer page shows the company and role. |
 | Headless | Admin API `/api/v2/admin/companies`, `/api/v2/admin/company-members`; shop API `/api/v2/shop/company`, `/company/members` (`PATCH` for admins), `/company/orders`. Own resources, the core ones are not overridden. |
-| Secure by construction | Exhaustive voters `COMPANY_VIEW`, `COMPANY_MANAGE_MEMBERS`, `ORDER_VIEW_OWN`, `ORDER_VIEW_COMPANY` on every page and API operation, tested against other companies, disabled members, disabled companies, non-members and visitors. |
+| Secure by construction | Exhaustive voters `COMPANY_VIEW`, `COMPANY_MANAGE_MEMBERS`, `COMPANY_MANAGE_ADDRESSES`, `ORDER_VIEW_OWN`, `ORDER_VIEW_COMPANY` on every page and API operation, tested against other companies, disabled members, disabled companies, non-members and visitors. |
 | Share one account between colleagues | With [tmonier/sylius-order-hold-plugin](https://github.com/thibmonier/sylius-order-hold-plugin): the **company becomes the account owner** of its members' orders (e.g. one trade credit line per company with tmonier/sylius-trade-credit-plugin). Optional. |
 | Feed other tools | **Events** after each change (`company.created`, `member.added`, `member.role_changed`...) for a webhook outbox, a timeline or an audit trail. |
 | GDPR | Deleting a customer, or their shop account (the *Delete* action of the Sylius customer page), deletes their membership (event `member.removed`); the members' data stays in the core customer. |
@@ -200,7 +201,9 @@ for a disabled membership or company, or a missing permission.
 |---|---|
 | `tmonier_company_accounts_shop.account.company.{show,members,orders,order}.index.content.main` → `section` | Body of each company page |
 | `tmonier_company_accounts_shop.account.company.*.index.content.main.header` → `title`, `navigation` | Company name, role, tabs |
-| `tmonier_company_accounts.shop.account.company.tabs` → `overview`, `members`, `orders` | One tab each (see [Extending](#extending)) |
+| `tmonier_company_accounts_shop.account.company.{addresses,address_form}.index.content.main` → `section` | Address book list and add / edit form |
+| `sylius_shop.checkout.address.content` → `tmonier_company_addresses` | Shared addresses offered above the address form of the checkout |
+| `tmonier_company_accounts.shop.account.company.tabs` → `overview`, `members`, `orders`, `addresses` | One tab each (see [Extending](#extending)) |
 | `sylius_shop.account.dashboard.index.content.main` → `tmonier_company` | Company card of the dashboard |
 | `sylius_admin.customer.show.content.sections.general` → `tmonier_company` | Company row of the admin customer page |
 | `tmonier_company_accounts_admin.company.update.content.header.title_block.actions` → `members` | Members button of the company form |
@@ -255,7 +258,7 @@ context.
 
 ## Limitations
 
-- One company per customer; no subsidiaries, invitations, shared address book, per-company
+- One company per customer; no subsidiaries, invitations, per-company
   payment methods, spending limits or order approval in this version (approval is planned in
   tmonier/sylius-purchase-approval-plugin).
 - A buyer pays and follows their own orders in the core order history; the company order pages
@@ -264,8 +267,11 @@ context.
 - Customers are attached by the store (back office or admin API); company admins cannot invite
   or attach customers in this version.
 - The VAT number is not checked against VIES.
-- Deleting a company deletes its memberships and its company order links (the orders stay):
-  disable it instead to keep the history.
+- The shared address book is delivery addresses only (no billing address, no default address, not exposed by the shop API in 1.2). The checkout copies the address: later changes never alter placed orders.
+- Deleting a company deletes its memberships, its shared addresses and its company order links (the orders stay):
+  disable it instead to keep the history. Delete companies through the ORM (back office, Doctrine
+  entity manager): a raw SQL `DELETE` bypasses it and can leave the `sylius_address` rows of its
+  shared addresses orphaned.
 - Plugins that anonymise customers instead of deleting them keep the membership (with the
   anonymised name): detach the member if needed.
 - Changing a company's default group touches every member in the flush (fine for tens or

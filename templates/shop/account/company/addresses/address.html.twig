@@ -1,0 +1,7 @@
+<address class="mb-0">
+    {% if address.company %}{{ address.company }}<br>{% endif %}
+    {{ address.fullName }}<br>
+    {{ address.street }}<br>
+    {{ address.postcode }} {{ address.city }}<br>
+    {{ address.countryCode|sylius_country_name }}
+</address>

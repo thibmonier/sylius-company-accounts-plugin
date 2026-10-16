@@ -14,3 +14,6 @@ tmonier_company_accounts:
         self_change: 'Vous ne pouvez pas modifier votre propre rôle ou statut.'
         last_admin: 'L''entreprise doit garder au moins un administrateur actif.'
         not_found: 'Ce membre ne fait plus partie de l''entreprise.'
+    address:
+        label:
+            not_blank: 'Veuillez saisir un nom pour l''adresse.'

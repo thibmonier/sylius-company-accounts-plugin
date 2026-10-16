@@ -1,0 +1,37 @@
+{% set context = hookable_metadata.context %}
+{% set can_manage = is_granted('COMPANY_MANAGE_ADDRESSES', context.company) %}
+
+{% include '@SyliusShop/shared/flashes.html.twig' %}
+
+{% if can_manage %}
+    <p>
+        <a class="btn btn-primary" href="{{ path('tmonier_company_accounts_shop_company_address_create') }}" {{ sylius_test_html_attribute('tmonier-company-address-add') }}>{{ 'tmonier_company_accounts.ui.add_address'|trans }}</a>
+    </p>
+{% endif %}
+
+{% if context.addresses is empty %}
+    <p class="text-body-secondary" {{ sylius_test_html_attribute('tmonier-company-addresses-empty') }}>{{ 'tmonier_company_accounts.ui.no_addresses'|trans }}</p>
+{% else %}
+    <div class="row g-3" {{ sylius_test_html_attribute('tmonier-company-addresses') }}>
+        {% for entry in context.addresses %}
+            <div class="col-md-6">
+                <div class="card h-100" {{ sylius_test_html_attribute('tmonier-company-address', entry.id) }}>
+                    <div class="card-body">
+                        <h2 class="h5 card-title">{{ entry.label }}</h2>
+                        {% include '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/addresses/address.html.twig' with { address: entry.address } only %}
+                    </div>
+                    {% if can_manage %}
+                        <div class="card-footer d-flex gap-2">
+                            <a class="btn btn-sm btn-outline-primary" href="{{ path('tmonier_company_accounts_shop_company_address_update', {'id': entry.id}) }}">{{ 'sylius.ui.edit'|trans }}<span class="visually-hidden"> ({{ entry.label }})</span></a>
+                            <form method="post" action="{{ path('tmonier_company_accounts_shop_company_address_delete', {'id': entry.id}) }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('tmonier_company_address_' ~ entry.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" {{ sylius_test_html_attribute('tmonier-company-address-delete', entry.id) }}>{{ 'sylius.ui.delete'|trans }}<span class="visually-hidden"> ({{ entry.label }})</span></button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+<p class="text-body-secondary small mt-3">{{ (can_manage ? 'tmonier_company_accounts.ui.addresses_admin_help' : 'tmonier_company_accounts.ui.addresses_help')|trans }}</p>
