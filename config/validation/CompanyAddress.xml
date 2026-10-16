@@ -7,6 +7,7 @@
         <property name="label">
             <constraint name="NotBlank">
                 <option name="message">tmonier_company_accounts.address.label.not_blank</option>
+                <option name="normalizer">trim</option>
                 <option name="groups">sylius</option>
             </constraint>
             <constraint name="Length">
