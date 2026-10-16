@@ -30,6 +30,7 @@ final class CompanyVoter extends Voter
             CompanyPermissions::COMPANY_VIEW,
             CompanyPermissions::COMPANY_MANAGE_MEMBERS,
             CompanyPermissions::ORDER_VIEW_COMPANY,
+            CompanyPermissions::COMPANY_MANAGE_ADDRESSES,
         ], true);
     }
 
@@ -44,7 +45,7 @@ final class CompanyVoter extends Voter
 
         return match ($attribute) {
             CompanyPermissions::COMPANY_VIEW => true,
-            CompanyPermissions::COMPANY_MANAGE_MEMBERS => $member->isAdmin(),
+            CompanyPermissions::COMPANY_MANAGE_MEMBERS, CompanyPermissions::COMPANY_MANAGE_ADDRESSES => $member->isAdmin(),
             CompanyPermissions::ORDER_VIEW_COMPANY => in_array($member->getRole(), $this->companyOrdersRoles, true),
             default => false,
         };

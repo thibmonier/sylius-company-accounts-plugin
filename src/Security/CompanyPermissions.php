@@ -16,6 +16,9 @@ final class CompanyPermissions
     /** Subject: company. COMPANY_VIEW and the admin role. */
     public const COMPANY_MANAGE_MEMBERS = 'COMPANY_MANAGE_MEMBERS';
 
+    /** Subject: company. COMPANY_VIEW and the admin role: add, change and remove shared addresses. */
+    public const COMPANY_MANAGE_ADDRESSES = 'COMPANY_MANAGE_ADDRESSES';
+
     /** Subject: order. The order of the signed-in customer. */
     public const ORDER_VIEW_OWN = 'ORDER_VIEW_OWN';
 
@@ -25,7 +28,7 @@ final class CompanyPermissions
      */
     public const ORDER_VIEW_COMPANY = 'ORDER_VIEW_COMPANY';
 
-    public const ALL = [self::COMPANY_VIEW, self::COMPANY_MANAGE_MEMBERS, self::ORDER_VIEW_OWN, self::ORDER_VIEW_COMPANY];
+    public const ALL = [self::COMPANY_VIEW, self::COMPANY_MANAGE_MEMBERS, self::ORDER_VIEW_OWN, self::ORDER_VIEW_COMPANY, self::COMPANY_MANAGE_ADDRESSES];
 
     private function __construct()
     {
