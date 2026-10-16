@@ -1,5 +1,13 @@
 tmonier_company_accounts:
     ui:
+        addresses: 'Indirizzi'
+        add_address: 'Aggiungi un indirizzo'
+        no_addresses: 'L''azienda non ha ancora indirizzi condivisi.'
+        addresses_help: 'Indirizzi di consegna condivisi dai membri dell''azienda. Solo gli amministratori dell''azienda possono modificarli.'
+        addresses_admin_help: 'Indirizzi di consegna condivisi da tutti i membri dell''azienda, che possono sceglierli al checkout. Puoi aggiungerli, modificarli ed eliminarli.'
+        checkout_addresses: 'Indirizzi dell''azienda'
+        checkout_addresses_help: 'Consegna a uno degli indirizzi condivisi dalla tua azienda.'
+        use_address: 'Consegna qui'
         companies: 'Aziende'
         company: 'Azienda'
         company_member: 'Membro dell''azienda'
@@ -36,6 +44,8 @@ tmonier_company_accounts:
         buyer: 'Acquirente'
         approver: 'Approvatore'
     form:
+        address_label: 'Nome dell''indirizzo'
+        address_label_help: 'Ad esempio «Stabilimento di Lione». Visibile a tutti i membri.'
         vat_number: 'Partita IVA'
         registration_number: 'Numero di registrazione'
         registration_number_help: 'Numero REA, codice fiscale...'

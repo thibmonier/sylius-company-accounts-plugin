@@ -32,3 +32,40 @@ tmonier_company_accounts_shop_company_order_show:
         number: '[A-Za-z0-9_-]{1,64}'
     defaults:
         _controller: tmonier_company_accounts.controller.shop.company_account::showOrderAction
+
+tmonier_company_accounts_shop_company_addresses:
+    path: /account/company/addresses
+    methods: [GET]
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_address::indexAction
+
+tmonier_company_accounts_shop_company_address_create:
+    path: /account/company/addresses/new
+    methods: [GET, POST]
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_address::createAction
+
+tmonier_company_accounts_shop_company_address_update:
+    path: /account/company/addresses/{id}/edit
+    methods: [GET, POST]
+    requirements:
+        id: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_address::updateAction
+
+tmonier_company_accounts_shop_company_address_delete:
+    path: /account/company/addresses/{id}/delete
+    methods: [POST]
+    requirements:
+        id: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_address::deleteAction
+
+# Checkout: copies the shared address to the shipping address of the cart.
+tmonier_company_accounts_shop_company_address_use:
+    path: /account/company/addresses/{id}/use
+    methods: [POST]
+    requirements:
+        id: '\d+'
+    defaults:
+        _controller: tmonier_company_accounts.controller.shop.company_address::useAction

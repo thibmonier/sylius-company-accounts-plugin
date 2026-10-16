@@ -1,5 +1,13 @@
 tmonier_company_accounts:
     ui:
+        addresses: 'Adresses'
+        add_address: 'Ajouter une adresse'
+        no_addresses: 'L''entreprise n''a pas encore d''adresse partagée.'
+        addresses_help: 'Adresses de livraison partagées par les membres de l''entreprise. Seuls les administrateurs de l''entreprise les modifient.'
+        addresses_admin_help: 'Adresses de livraison partagées par tous les membres de l''entreprise, qui peuvent les choisir au paiement. Vous pouvez les ajouter, les modifier et les supprimer.'
+        checkout_addresses: 'Adresses de l''entreprise'
+        checkout_addresses_help: 'Livrer à l''une des adresses partagées par votre entreprise.'
+        use_address: 'Livrer ici'
         companies: 'Entreprises'
         company: 'Entreprise'
         company_member: 'Membre d''entreprise'
@@ -36,6 +44,8 @@ tmonier_company_accounts:
         buyer: 'Acheteur'
         approver: 'Approbateur'
     form:
+        address_label: 'Nom de l''adresse'
+        address_label_help: 'Par exemple « Usine de Lyon ». Visible de tous les membres.'
         vat_number: 'N° de TVA intracommunautaire'
         registration_number: 'N° d''immatriculation (SIREN...)'
         registration_number_help: 'SIREN, SIRET, numéro RCS...'

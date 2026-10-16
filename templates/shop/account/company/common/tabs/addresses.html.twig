@@ -1,0 +1,4 @@
+{% set context = hookable_metadata.context %}
+<li class="nav-item">
+    <a class="nav-link {{ context.active_tab == 'addresses' ? 'active' }}" href="{{ path('tmonier_company_accounts_shop_company_addresses') }}" {% if context.active_tab == 'addresses' %}aria-current="page"{% endif %} {{ sylius_test_html_attribute('tmonier-company-addresses-link') }}>{{ 'tmonier_company_accounts.ui.addresses'|trans }}</a>
+</li>

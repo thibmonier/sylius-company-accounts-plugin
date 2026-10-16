@@ -1,0 +1,24 @@
+{# Hook sylius_shop.checkout.address.content: the shared addresses of the company of the signed-in member. Nothing is rendered without company or without shared address (checkout unchanged). #}
+{% set company_addresses = tmonier_company_addresses() %}
+{% if company_addresses is not empty %}
+    <section class="card mb-4" {{ sylius_test_html_attribute('tmonier-checkout-company-addresses') }}>
+        <div class="card-body">
+            <h2 class="h5 card-title">{{ 'tmonier_company_accounts.ui.checkout_addresses'|trans }}</h2>
+            <p class="text-body-secondary small">{{ 'tmonier_company_accounts.ui.checkout_addresses_help'|trans }}</p>
+            <ul class="list-unstyled row g-3 mb-0">
+                {% for entry in company_addresses %}
+                    <li class="col-md-6" {{ sylius_test_html_attribute('tmonier-checkout-company-address', entry.id) }}>
+                        <form method="post" action="{{ path('tmonier_company_accounts_shop_company_address_use', {'id': entry.id}) }}" class="border rounded p-3 h-100 d-flex flex-column justify-content-between gap-2">
+                            <div>
+                                <strong>{{ entry.label }}</strong>
+                                {% include '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/addresses/address.html.twig' with { address: entry.address } only %}
+                            </div>
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('tmonier_company_address_use_' ~ entry.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-primary align-self-start">{{ 'tmonier_company_accounts.ui.use_address'|trans }}<span class="visually-hidden"> ({{ entry.label }})</span></button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+{% endif %}

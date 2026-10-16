@@ -82,6 +82,49 @@ sylius_twig_hooks:
                 template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/order/details.html.twig'
                 priority: -10
 
+        # Company area: addresses (shared address book) and its add/edit form.
+        'tmonier_company_accounts_shop.account.company.addresses.index.content':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/breadcrumbs.html.twig'
+                priority: 200
+
+        'tmonier_company_accounts_shop.account.company.addresses.index.content.main.header':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/title.html.twig'
+                priority: 100
+            navigation:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/navigation.html.twig'
+                priority: 0
+
+        'tmonier_company_accounts_shop.account.company.addresses.index.content.main':
+            section:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/addresses/list.html.twig'
+                priority: -10
+
+        'tmonier_company_accounts_shop.account.company.address_form.index.content':
+            breadcrumbs:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/breadcrumbs.html.twig'
+                priority: 200
+
+        'tmonier_company_accounts_shop.account.company.address_form.index.content.main.header':
+            title:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/title.html.twig'
+                priority: 100
+            navigation:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/navigation.html.twig'
+                priority: 0
+
+        'tmonier_company_accounts_shop.account.company.address_form.index.content.main':
+            section:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/addresses/form.html.twig'
+                priority: -10
+
+        # Checkout, address step: pick a shared address of the company (above the address form).
+        'sylius_shop.checkout.address.content':
+            tmonier_company_addresses:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/checkout/company_addresses.html.twig'
+                priority: 50
+
         # Tabs of the "My company" pages (extension point, see README "Extending"): one <li> per
         # hookable; other plugins add theirs with a lower priority (after "Company orders").
         'tmonier_company_accounts.shop.account.company.tabs':
@@ -94,3 +137,6 @@ sylius_twig_hooks:
             orders:
                 template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/tabs/orders.html.twig'
                 priority: 100
+            addresses:
+                template: '@TmonierSyliusCompanyAccountsPlugin/shop/account/company/common/tabs/addresses.html.twig'
+                priority: 90

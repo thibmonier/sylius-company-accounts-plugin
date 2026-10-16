@@ -1,5 +1,13 @@
 tmonier_company_accounts:
     ui:
+        addresses: 'Adresy'
+        add_address: 'Dodaj adres'
+        no_addresses: 'Firma nie ma jeszcze wspólnych adresów.'
+        addresses_help: 'Adresy dostawy współdzielone przez członków firmy. Zmieniają je tylko administratorzy firmy.'
+        addresses_admin_help: 'Adresy dostawy współdzielone przez wszystkich członków firmy, którzy mogą je wybrać podczas zamówienia. Możesz je dodawać, zmieniać i usuwać.'
+        checkout_addresses: 'Adresy firmy'
+        checkout_addresses_help: 'Dostawa pod jeden z adresów udostępnionych przez Twoją firmę.'
+        use_address: 'Dostarcz tutaj'
         companies: 'Firmy'
         company: 'Firma'
         company_member: 'Członek firmy'
@@ -36,6 +44,8 @@ tmonier_company_accounts:
         buyer: 'Kupujący'
         approver: 'Zatwierdzający'
     form:
+        address_label: 'Nazwa adresu'
+        address_label_help: 'Na przykład „Zakład w Lyonie”. Widoczna dla wszystkich członków.'
         vat_number: 'NIP UE'
         registration_number: 'Numer rejestrowy (KRS, REGON...)'
         registration_number_help: 'KRS, REGON...'

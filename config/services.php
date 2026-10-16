@@ -10,12 +10,15 @@ use Tmonier\SyliusCompanyAccountsPlugin\Api\Shop\CompanyProvider;
 use Tmonier\SyliusCompanyAccountsPlugin\Api\Shop\ShopApiAccess;
 use Tmonier\SyliusCompanyAccountsPlugin\Api\Shop\UpdateCompanyMemberProcessor;
 use Tmonier\SyliusCompanyAccountsPlugin\Controller\Shop\CompanyAccountController;
+use Tmonier\SyliusCompanyAccountsPlugin\Controller\Shop\CompanyAddressController;
 use Tmonier\SyliusCompanyAccountsPlugin\EventListener\CompanyChangeListener;
 use Tmonier\SyliusCompanyAccountsPlugin\EventListener\CompanyOrderListener;
+use Tmonier\SyliusCompanyAccountsPlugin\EventListener\CompanyRemovalListener;
 use Tmonier\SyliusCompanyAccountsPlugin\EventListener\CustomerRemovalListener;
 use Tmonier\SyliusCompanyAccountsPlugin\Factory\CompanyMemberFactory;
 use Tmonier\SyliusCompanyAccountsPlugin\Factory\CompanyMemberFactoryInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Fixture\CompanyFixture;
+use Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyAddressType;
 use Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyMemberType;
 use Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CompanyType;
 use Tmonier\SyliusCompanyAccountsPlugin\Form\Type\CustomerAutocompleteType;
@@ -31,6 +34,7 @@ use Tmonier\SyliusCompanyAccountsPlugin\Menu\AdminMenuListener;
 use Tmonier\SyliusCompanyAccountsPlugin\Security\CompanyVoter;
 use Tmonier\SyliusCompanyAccountsPlugin\Security\OrderVoter;
 use Tmonier\SyliusCompanyAccountsPlugin\Twig\CompanyAccountsExtension;
+use Tmonier\SyliusCompanyAccountsPlugin\Twig\CompanyAddressesExtension;
 
 return static function (ContainerConfigurator $container): void {
     $services = $container->services();
@@ -112,6 +116,12 @@ return static function (ContainerConfigurator $container): void {
         ->tag('doctrine.event_listener', ['event' => 'preRemove'])
     ;
 
+    $services
+        ->set('tmonier_company_accounts.listener.company_removal', CompanyRemovalListener::class)
+        ->args([service('tmonier_company_accounts.repository.company_address')])
+        ->tag('doctrine.event_listener', ['event' => 'preRemove'])
+    ;
+
     // Factories and forms
     $services
         ->set('tmonier_company_accounts.custom_factory.company_member', CompanyMemberFactory::class)
@@ -132,6 +142,11 @@ return static function (ContainerConfigurator $container): void {
     $services
         ->set('tmonier_company_accounts.form.type.company_member', CompanyMemberType::class)
         ->args([param('tmonier_company_accounts.model.company_member.class'), ['sylius']])
+        ->tag('form.type')
+    ;
+    $services
+        ->set('tmonier_company_accounts.form.type.company_address', CompanyAddressType::class)
+        ->args([param('tmonier_company_accounts.model.company_address.class'), ['sylius']])
         ->tag('form.type')
     ;
     $services
@@ -161,6 +176,30 @@ return static function (ContainerConfigurator $container): void {
             service('tmonier_company_accounts.current_member_resolver'),
         ])
         ->tag('twig.extension')
+    ;
+    $services
+        ->set('tmonier_company_accounts.twig.addresses_extension', CompanyAddressesExtension::class)
+        ->args([
+            service('tmonier_company_accounts.current_member_resolver'),
+            service('tmonier_company_accounts.repository.company_address'),
+            service('security.authorization_checker'),
+        ])
+        ->tag('twig.extension')
+    ;
+    $services
+        ->set('tmonier_company_accounts.controller.shop.company_address', CompanyAddressController::class)
+        ->args([
+            service('tmonier_company_accounts.current_member_resolver'),
+            service('tmonier_company_accounts.repository.company_address'),
+            service('tmonier_company_accounts.factory.company_address'),
+            service('sylius.factory.address'),
+            service('doctrine.orm.entity_manager'),
+            service('sylius.context.cart'),
+        ])
+        ->call('setContainer', [service(\Psr\Container\ContainerInterface::class)])
+        ->tag('controller.service_arguments')
+        ->tag('container.service_subscriber')
+        ->public()
     ;
     $services
         ->set('tmonier_company_accounts.controller.shop.company_account', CompanyAccountController::class)

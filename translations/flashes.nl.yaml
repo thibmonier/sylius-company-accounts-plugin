@@ -1,2 +1,5 @@
 tmonier_company_accounts:
     member_updated: 'Het lid is bijgewerkt.'
+    address_created: 'Het adres is toegevoegd.'
+    address_updated: 'Het adres is bijgewerkt.'
+    address_deleted: 'Het adres is verwijderd.'

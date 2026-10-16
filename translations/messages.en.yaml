@@ -1,5 +1,13 @@
 tmonier_company_accounts:
     ui:
+        addresses: 'Addresses'
+        add_address: 'Add an address'
+        no_addresses: 'The company has no shared address yet.'
+        addresses_help: 'Delivery addresses shared by the members of the company. Only company admins change them.'
+        addresses_admin_help: 'Delivery addresses shared by all the members of the company, who can pick them at the checkout. You can add, change and remove them.'
+        checkout_addresses: 'Company addresses'
+        checkout_addresses_help: 'Deliver to one of the addresses shared by your company.'
+        use_address: 'Deliver here'
         companies: 'Companies'
         company: 'Company'
         company_member: 'Company member'
@@ -36,6 +44,8 @@ tmonier_company_accounts:
         buyer: 'Buyer'
         approver: 'Approver'
     form:
+        address_label: 'Name of the address'
+        address_label_help: 'For example "Lyon plant". Shown to all the members.'
         vat_number: 'VAT number'
         registration_number: 'Registration number'
         registration_number_help: 'SIREN, Companies House number, Handelsregister number...'

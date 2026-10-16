@@ -1,2 +1,5 @@
 tmonier_company_accounts:
     member_updated: 'Le membre a été mis à jour.'
+    address_created: 'L''adresse a été ajoutée.'
+    address_updated: 'L''adresse a été mise à jour.'
+    address_deleted: 'L''adresse a été supprimée.'
