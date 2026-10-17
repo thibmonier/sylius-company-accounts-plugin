@@ -1,13 +1,15 @@
 # Sylius Company Accounts Plugin
 
+> Français : [README.fr.md](README.fr.md) <!-- vitrine:lang -->
+
 [![Build](https://github.com/thibmonier/sylius-company-accounts-plugin/actions/workflows/build.yaml/badge.svg)](https://github.com/thibmonier/sylius-company-accounts-plugin/actions/workflows/build.yaml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **B2B company accounts for Sylius 2: several buyers of the same company, with roles, a company
 area in the customer account, and the company as the account owner of their orders.**
 
-Sylius 2 knows customers, not the companies they buy for. This plugin is an MIT alternative,
-native to Sylius 2.2 / 2.3, to company accounts for merchants without Sylius Plus: companies
+Sylius 2 knows customers, not the companies they buy for. This plugin adds company accounts, MIT-licensed
+and native to Sylius 2.2 / 2.3: companies
 with members and roles, managed by the store in the back office and, for their colleagues, by
 the company admins in the shop.
 
@@ -308,6 +310,14 @@ APP_ENV=test vendor/bin/phpunit --testsuite non-unit
 vendor/bin/phpstan analyse
 vendor/bin/ecs check
 ```
+
+<!-- vitrine:demo-b2b:start -->
+## B2B demo
+
+This plugin is used in the [Sylius B2B demo](https://github.com/thibmonier/sylius-b2b-demo): a Sylius 2.3 shop with fictitious sample data where the B2B plugins work together. The source code, setup and fixtures of the demo are in that repository.
+
+The demo is an example, not a production setup.
+<!-- vitrine:demo-b2b:end -->
 
 ## License
 
