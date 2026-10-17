@@ -8,8 +8,8 @@
 **B2B company accounts for Sylius 2: several buyers of the same company, with roles, a company
 area in the customer account, and the company as the account owner of their orders.**
 
-Sylius 2 knows customers, not the companies they buy for. This plugin is an MIT alternative,
-native to Sylius 2.2 / 2.3, to company accounts for merchants without Sylius Plus: companies
+Sylius 2 knows customers, not the companies they buy for. This plugin adds company accounts, MIT-licensed
+and native to Sylius 2.2 / 2.3: companies
 with members and roles, managed by the store in the back office and, for their colleagues, by
 the company admins in the shop.
 

@@ -8,8 +8,8 @@
 **Comptes d'entreprise B2B pour Sylius 2 : plusieurs acheteurs d'une même entreprise, avec des rôles, un
 espace entreprise dans le compte client, et l'entreprise comme titulaire du compte de leurs commandes.**
 
-Sylius 2 connaît les clients, pas les entreprises pour lesquelles ils achètent. Ce plugin est une alternative
-MIT, native pour Sylius 2.2 / 2.3, aux comptes d'entreprise pour les marchands sans Sylius Plus : des
+Sylius 2 connaît les clients, pas les entreprises pour lesquelles ils achètent. Ce plugin ajoute les comptes d'entreprise, sous licence MIT
+et natif pour Sylius 2.2 / 2.3 : des
 entreprises avec des membres et des rôles, gérées par la boutique dans le back-office et, pour leurs
 collègues, par les administrateurs de l'entreprise dans la boutique.
 
