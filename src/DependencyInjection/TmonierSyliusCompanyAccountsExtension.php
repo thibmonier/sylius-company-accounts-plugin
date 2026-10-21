@@ -10,6 +10,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Tmonier\SyliusAdminOrderCreationPlugin\Address\OrderAddressSourceInterface;
 use Tmonier\SyliusAdminOrderCreationPlugin\Entity\AdminOrderCreationInterface;
 use Tmonier\SyliusCompanyAccountsPlugin\Member\CompanyOrderEligibilityCheckerInterface;
 use Tmonier\SyliusOrderHoldPlugin\AccountOwner\AccountOwnerResolverInterface;
@@ -45,6 +46,11 @@ final class TmonierSyliusCompanyAccountsExtension extends AbstractResourceExtens
         // for the member's company (set at prepend time, when the other extensions are known).
         if (true === ($container->hasParameter(self::ADMIN_ORDER_CREATION_PARAMETER) ? $container->getParameter(self::ADMIN_ORDER_CREATION_PARAMETER) : false)) {
             $loader->load('services/admin_order_creation.php');
+
+            // The address sources exist from version 1.1 of that plugin.
+            if (interface_exists(OrderAddressSourceInterface::class)) {
+                $loader->load('services/admin_order_address_source.php');
+            }
         }
     }
 
