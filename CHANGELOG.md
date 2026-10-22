@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.3.0 - 2026-10-22
+
+### Added
+
+- **Company addresses at the address step of the orders created by staff.** With
+  `tmonier/sylius-admin-order-creation-plugin` 1.1 or later enabled, the shared address book of the
+  company of the customer is offered first (group "Company addresses", above the customer's own
+  address book) when an administrator creates an order for a member. Only the book of the company
+  the customer is an active member of is offered (nothing for a customer without company, a
+  disabled member or a disabled company), and it is the whitelist the submitted choice is checked
+  against by the admin plugin. The order keeps a copy of the address.
+  Service `tmonier_company_accounts.admin_order_address_source.company` (class
+  `Bridge\AdminOrderCreation\CompanyAddressSource`), registered only when the address sources of
+  the admin plugin exist.
+
+### Compatibility
+
+No BC break and no new hard dependency: `tmonier/sylius-admin-order-creation-plugin` stays a
+`suggest` (a shop without it, or with its 1.0, is unchanged). The development constraint of the
+admin plugin moves to `^1.1`.
+
 ## 1.2.0
 
 ### Added

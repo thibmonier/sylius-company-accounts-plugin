@@ -52,7 +52,7 @@ fixture de démonstration ; prise en charge de MySQL, MariaDB et PostgreSQL (mig
 | PHP | 8.2+ (Sylius 2.2), 8.3+ (Sylius 2.3) |
 | Sylius | 2.2.9+, 2.3 |
 | Symfony | 6.4, 7.4 (Sylius 2.2) ; 6.4, 7.4, 8.0 (Sylius 2.3, Symfony 8 nécessite PHP 8.4) |
-| Facultatif | tmonier/sylius-order-hold-plugin 1.0 (passerelle titulaire du compte), tmonier/sylius-admin-order-creation-plugin 1.0 (les commandes du personnel comptent pour l'entreprise) |
+| Facultatif | tmonier/sylius-order-hold-plugin 1.0 (passerelle titulaire du compte), tmonier/sylius-admin-order-creation-plugin 1.0 (les commandes du personnel comptent pour l'entreprise), 1.1 (les adresses de l'entreprise sont proposées à l'étape adresse des commandes du personnel) |
 
 Sylius 2.2.9 est la version minimale commune avec le noyau order-hold (GHSA-2rv4-pjmm-7fxf et
 GHSA-vv4h-q2x8-74g4 sont corrigées à partir de la 2.2.9).

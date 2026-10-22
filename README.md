@@ -52,7 +52,7 @@ demo fixture; MySQL, MariaDB and PostgreSQL support (Schema API migration).
 | PHP | 8.2+ (Sylius 2.2), 8.3+ (Sylius 2.3) |
 | Sylius | 2.2.9+, 2.3 |
 | Symfony | 6.4, 7.4 (Sylius 2.2); 6.4, 7.4, 8.0 (Sylius 2.3, Symfony 8 needs PHP 8.4) |
-| Optional | tmonier/sylius-order-hold-plugin 1.0 (account owner bridge), tmonier/sylius-admin-order-creation-plugin 1.0 (staff orders count for the company) |
+| Optional | tmonier/sylius-order-hold-plugin 1.0 (account owner bridge), tmonier/sylius-admin-order-creation-plugin 1.0 (staff orders count for the company), 1.1 (the company addresses are offered at the address step of staff orders) |
 
 Sylius 2.2.9 is the floor shared with the order-hold kernel (GHSA-2rv4-pjmm-7fxf and
 GHSA-vv4h-q2x8-74g4 are fixed from 2.2.9).
